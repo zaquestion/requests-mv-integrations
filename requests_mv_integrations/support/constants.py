@@ -4,9 +4,13 @@
 #  @namespace requests_mv_integrations
 
 import sys
+import requests
 from requests_mv_integrations import (
     __version__,
     __title__
+)
+from pyhttpstatus_utils import (
+    HttpStatusCode
 )
 
 SECONDS_FOR_5_MINUTES = 300
@@ -56,3 +60,17 @@ HEADER_CONTENT_TYPE_APP_URLENCODED = \
 
 HEADER_USER_AGENT = \
     {'User-Agent': __USER_AGENT__}
+
+REQUEST_RETRY_EXCPS = (
+    requests.exceptions.ConnectTimeout,
+    requests.exceptions.ReadTimeout,
+    requests.exceptions.Timeout
+)
+
+REQUEST_RETRY_HTTP_STATUS_CODES = [
+    HttpStatusCode.INTERNAL_SERVER_ERROR,
+    HttpStatusCode.BAD_GATEWAY,
+    HttpStatusCode.SERVICE_UNAVAILABLE,
+    HttpStatusCode.GATEWAY_TIMEOUT,
+    HttpStatusCode.TOO_MANY_REQUESTS
+]

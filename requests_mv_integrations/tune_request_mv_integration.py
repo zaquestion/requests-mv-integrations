@@ -11,15 +11,10 @@ from logging import getLogger
 
 import base64
 import copy
-import csv
 import datetime as dt
-import gzip
-import http.client as http_client
-import io
 import json
 import logging
 import os
-import re
 import time
 import urllib.parse
 from functools import partial
@@ -56,14 +51,15 @@ from pyhttpstatus_utils import (
 from requests_mv_integrations.support import (
     command_line_request_curl,
     convert_size,
-    detect_bom,
     base_class_name,
     python_check_version,
-    remove_bom,
     requests_response_text_html,
     safe_dict,
     safe_int,
     safe_str,
+
+    REQUEST_RETRY_EXCPS,
+    REQUEST_RETRY_HTTP_STATUS_CODES,
 
     __USER_AGENT__
 )
@@ -97,20 +93,6 @@ class TuneRequestMvIntegration(object):
         "delay": 10  # delay: initial delay between attempts.
         # default: 10 seconds.
     }
-
-    _REQUEST_RETRY_EXCPS = (
-        requests.exceptions.ConnectTimeout,
-        requests.exceptions.ReadTimeout,
-        requests.exceptions.Timeout
-    )
-
-    _REQUEST_RETRY_HTTP_STATUS_CODES = [
-        HttpStatusCode.INTERNAL_SERVER_ERROR,
-        HttpStatusCode.BAD_GATEWAY,
-        HttpStatusCode.SERVICE_UNAVAILABLE,
-        HttpStatusCode.GATEWAY_TIMEOUT,
-        HttpStatusCode.TOO_MANY_REQUESTS
-    ]
 
     # Current directory
     # @var string
@@ -323,9 +305,9 @@ class TuneRequestMvIntegration(object):
         time_start_req = dt.datetime.now()
 
         if not request_retry_http_status_codes:
-            request_retry_http_status_codes = self._REQUEST_RETRY_HTTP_STATUS_CODES
+            request_retry_http_status_codes = REQUEST_RETRY_HTTP_STATUS_CODES
         if not request_retry_excps:
-            request_retry_excps = self._REQUEST_RETRY_EXCPS
+            request_retry_excps = REQUEST_RETRY_EXCPS
 
         log.debug(
             "Request: Details: {}".format(

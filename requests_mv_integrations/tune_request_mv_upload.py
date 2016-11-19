@@ -9,33 +9,10 @@ TUNE Multiverse Request
 
 from logging import getLogger
 
-import base64
-import copy
-import csv
-import datetime as dt
-import gzip
-import http.client as http_client
-import io
-import json
-import logging
-import os
-import re
-import time
-import urllib.parse
-from functools import partial
-
-import bs4
 import requests
-import requests_toolbelt
-import xmltodict
-
-from pprintpp import pprint
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 from requests_mv_integrations.errors.exceptions import (
     TuneRequestError,
-    TuneRequestClientError,
-    TuneRequestServiceError,
     TuneRequestModuleError
 )
 from requests_mv_integrations.errors.errors_traceback import (
@@ -45,34 +22,15 @@ from requests_mv_integrations.errors.errors_traceback import (
 from requests_mv_integrations.errors.exit_code import (
     IntegrationExitCode
 )
-from pyhttpstatus_utils import (
-    HttpStatusCode,
-    HttpStatusType,
-    http_status_code_to_desc,
-    http_status_code_to_type,
-    is_http_status_type,
-    is_http_status_successful
-)
 from requests_mv_integrations.support import (
-    command_line_request_curl,
-    convert_size,
-    detect_bom,
     base_class_name,
     python_check_version,
-    remove_bom,
-    requests_response_text_html,
-    safe_dict,
-    safe_int,
-    safe_str,
 
-    __USER_AGENT__
+    REQUEST_RETRY_EXCPS,
+    REQUEST_RETRY_HTTP_STATUS_CODES
 )
 from requests_mv_integrations import (
     __python_required_version__
-)
-
-from .tune_request import (
-    TuneRequest
 )
 
 from .tune_request_mv_integration import (
@@ -87,13 +45,13 @@ python_check_version(__python_required_version__)
 class TuneRequestMvUpload(TuneRequestMvIntegration):
 
     def request_upload_json_file(
-            self,
-            upload_request_url,
-            upload_data_file_path,
-            upload_data_file_size,
-            is_upload_gzip,
-            request_label,
-            upload_timeout=None
+        self,
+        upload_request_url,
+        upload_data_file_path,
+        upload_data_file_size,
+        is_upload_gzip,
+        request_label,
+        upload_timeout=None
     ):
         """Upload File to requested URL.
 
@@ -106,8 +64,8 @@ class TuneRequestMvUpload(TuneRequestMvIntegration):
         Returns:
 
         """
-        request_retry_excps = \
-            self._REQUEST_RETRY_EXCPS
+        request_retry_excps = REQUEST_RETRY_EXCPS
+        request_retry_http_status_codes = REQUEST_RETRY_HTTP_STATUS_CODES
 
         upload_request_retry = {
             "timeout": 60,
@@ -154,6 +112,7 @@ class TuneRequestMvUpload(TuneRequestMvIntegration):
                     request_retry=upload_request_retry,
                     request_headers=upload_request_headers,
                     request_retry_excps=request_retry_excps,
+                    request_retry_http_status_codes=request_retry_http_status_codes,
                     request_retry_excps_func=self._upload_request_retry_excps_func,
                     allow_redirects=False,
                     build_request_curl=False,
@@ -198,7 +157,6 @@ class TuneRequestMvUpload(TuneRequestMvIntegration):
 
         return response
 
-
     def request_upload_data(
             self,
             upload_request_url,
@@ -224,7 +182,8 @@ class TuneRequestMvUpload(TuneRequestMvIntegration):
             }
         )
 
-        request_retry_excps = self._REQUEST_RETRY_EXCPS
+        request_retry_excps = REQUEST_RETRY_EXCPS
+        request_retry_http_status_codes = REQUEST_RETRY_HTTP_STATUS_CODES
 
         upload_request_retry = {
             "timeout": 60,
@@ -249,6 +208,7 @@ class TuneRequestMvUpload(TuneRequestMvIntegration):
                 request_data=upload_data,
                 request_retry=upload_request_retry,
                 request_retry_excps=request_retry_excps,
+                request_retry_http_status_codes=request_retry_http_status_codes,
                 request_retry_excps_func=self._upload_request_retry_excps_func,
                 request_headers=request_headers,
                 allow_redirects=False,

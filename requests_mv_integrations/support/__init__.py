@@ -29,7 +29,10 @@ from .constants import (
     __TIMEZONE_NAME_DEFAULT__,
     __INTEGRATION_NAME_DEFAULT__,
     __USER_AGENT__,
-    __LOGGER_NAME__
+    __LOGGER_NAME__,
+
+    REQUEST_RETRY_EXCPS,
+    REQUEST_RETRY_HTTP_STATUS_CODES
 )
 from .datetime_utils import (
     get_current_date,
