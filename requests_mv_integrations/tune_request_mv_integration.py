@@ -7,18 +7,17 @@ TUNE Multiverse Request
 =======================
 """
 
+import logging
 from logging import getLogger
 
 import base64
 import copy
 import datetime as dt
 import json
-import logging
 import os
 import time
 import urllib.parse
 from functools import partial
-
 import bs4
 import requests
 import requests_toolbelt
@@ -306,8 +305,11 @@ class TuneRequestMvIntegration(object):
 
         if not request_retry_http_status_codes:
             request_retry_http_status_codes = REQUEST_RETRY_HTTP_STATUS_CODES
+        self.request_retry_http_status_codes = request_retry_http_status_codes
+
         if not request_retry_excps:
             request_retry_excps = REQUEST_RETRY_EXCPS
+        self.request_retry_excps = request_retry_excps
 
         log.debug(
             "Request: Details: {}".format(
@@ -340,8 +342,6 @@ class TuneRequestMvIntegration(object):
                 fargs=None,
                 fkwargs=kwargs,
                 timeout=timeout,
-                request_retry_http_status_codes=request_retry_http_status_codes,
-                request_retry_excps=request_retry_excps,
                 request_retry_func=request_retry_func,
                 request_retry_excps_func=request_retry_excps_func,
                 retry_tries=retry_tries,
@@ -428,9 +428,7 @@ class TuneRequestMvIntegration(object):
                 exit_code=IntegrationExitCode.MOD_ERR_REQUEST
             )
 
-        except (
-            TuneRequestError
-        ) as ex_expected:
+        except TuneRequestError:
             raise
 
         except Exception as ex:
@@ -461,8 +459,6 @@ class TuneRequestMvIntegration(object):
     def _request_retry(
         self,
         call_func,
-        request_retry_http_status_codes,
-        request_retry_excps,
         fargs=None,
         fkwargs=None,
         timeout=60,
@@ -520,13 +516,12 @@ class TuneRequestMvIntegration(object):
                 'request_label': request_label
             })
 
-        if request_retry_http_status_codes is not None:
-            request_retry_extra.update({
-                'request_retry_http_status_codes': request_retry_http_status_codes
-            })
+        request_retry_extra.update({
+            'request_retry_http_status_codes': self.request_retry_http_status_codes
+        })
 
-        if request_retry_excps is not None:
-            request_retry_excp_names = [excp.__name__ for excp in list(request_retry_excps)]
+        if self.request_retry_excps is not None:
+            request_retry_excp_names = [excp.__name__ for excp in list(self.request_retry_excps)]
             request_retry_extra.update({
                 'request_retry_excps': request_retry_excp_names
             })
@@ -544,7 +539,6 @@ class TuneRequestMvIntegration(object):
                 'request_retry_excps_func': request_retry_excps_func_name
             })
 
-
         log.debug(
             msg="{}: Begin".format(logger_label),
             extra=request_retry_extra
@@ -557,6 +551,9 @@ class TuneRequestMvIntegration(object):
 
         _attempts = 0
 
+        self.retry_tries = retry_tries
+        self.retry_backoff = retry_backoff
+
         _tries, _delay, _timeout = retry_tries, retry_delay, timeout
         while _tries:
             _attempts += 1
@@ -564,28 +561,16 @@ class TuneRequestMvIntegration(object):
             fkwargs['timeout'] = _timeout
             request_func = partial(call_func, *args, **kwargs)
 
-            if request_label:
-                log.debug(
-                    msg="{}: Attempt: {}".format(logger_label, _attempts),
-                    extra={
-                        'attempts': _attempts,
-                        'timeout': _timeout,
-                        'tries': _tries,
-                        'delay': _delay,
-                        'request_url': request_url,
-                        'request_label': request_label
-                    }
-                )
-            else:
-                log.debug(
-                    msg=logger_label,
-                    extra={
-                        'attempts': _attempts,
-                        'timeout': _timeout,
-                        'request_url': request_url,
-                        'request_label': request_label
-                    }
-                )
+            log.debug(
+                msg="{}: Attempt: {}".format(logger_label, _attempts),
+                extra={
+                    'attempts': _attempts,
+                    'timeout': _timeout,
+                    'tries': _tries,
+                    'delay': _delay,
+                    'request_url': request_url
+                }
+            )
 
             error_exception = None
             error_details = None
@@ -638,7 +623,7 @@ class TuneRequestMvIntegration(object):
                     }
                 )
 
-            except request_retry_excps as retry_ex:
+            except self.request_retry_excps as retry_ex:
                 error_exception = retry_ex
 
                 log.warning(
@@ -825,6 +810,14 @@ class TuneRequestMvIntegration(object):
             requests.Response
 
         """
+        tune_request = TuneRequest(
+            retry_tries=self.retry_tries,
+            retry_backoff=self.retry_backoff,
+            retry_codes=self.request_retry_http_status_codes
+        )
+
+        self.session = tune_request.session
+
         log.debug(
             "Request Op: Details: {}".format(
                 request_label
@@ -926,22 +919,33 @@ class TuneRequestMvIntegration(object):
             kwargs.update({
                 'headers': headers
             })
+
         if request_auth:
             kwargs.update({
                 'auth': request_auth
             })
+
         if timeout:
             kwargs.update({
                 'timeout': (timeout, timeout)
             })
+
         if allow_redirects:
             kwargs.update({
                 'allow_redirects': allow_redirects
             })
+
         if stream:
             kwargs.update({
                 'stream': stream
             })
+
+
+        if cookie_payload:
+            kwargs.update({
+                'cookies': cookie_payload
+            })
+
         kwargs.update({
             'verify': verify
         })
@@ -972,40 +976,16 @@ class TuneRequestMvIntegration(object):
                         }
                     )
 
-                kwargs.update({
-                    'url': request_url
-                })
-
                 if request_params_encoded:
                     kwargs.update({
                         'params': request_params_encoded
                     })
 
-                if request_session and self.session:
-                    if cookie_payload:
-                        kwargs.update({
-                            'cookies': cookie_payload
-                        })
-
-                    log.debug(
-                        "Request Op: Request Base: Session: GET",
-                        extra={
-                            'request_label': request_label,
-                            'kwargs': kwargs
-                        }
-                    )
-
-                    response = self.session.get(**kwargs)
-                else:
-                    log.debug(
-                        "Request Op: Request Base: Requests: GET",
-                        extra={
-                            'request_label': request_label,
-                            'kwargs': kwargs
-                        }
-                    )
-
-                    response = requests.get(**kwargs)
+                response = tune_request.request(
+                    request_method="GET",
+                    request_url=request_url,
+                    **kwargs
+                )
 
             elif request_method == 'POST':
                 if request_params:
@@ -1031,9 +1011,6 @@ class TuneRequestMvIntegration(object):
                         }
                     )
 
-                kwargs.update({
-                    'url': request_url
-                })
                 if request_data:
                     kwargs.update({
                         'data': request_data
@@ -1043,31 +1020,11 @@ class TuneRequestMvIntegration(object):
                         'json': request_json
                     })
 
-                if request_session and self.session:
-                    if cookie_payload:
-                        kwargs.update({
-                            'cookies': cookie_payload
-                        })
-
-                    log.debug(
-                        "Request Op: Request Base: Session: POST",
-                        extra={
-                            'request_label': request_label,
-                            'kwargs': kwargs
-                        }
-                    )
-
-                    response = self.session.post(**kwargs)
-                else:
-                    log.debug(
-                        "Request Op: Request Base: Requests: POST",
-                        extra={
-                            'request_label': request_label,
-                            'kwargs': kwargs
-                        }
-                    )
-
-                    response = requests.post(**kwargs)
+                response = tune_request.request(
+                    request_method="POST",
+                    request_url=request_url,
+                    **kwargs
+                )
 
             elif request_method == 'PUT':
                 if request_params:
@@ -1091,53 +1048,32 @@ class TuneRequestMvIntegration(object):
                         }
                     )
 
-                kwargs.update({
-                    'url': request_url
-                })
                 if request_data:
                     kwargs.update({
                         'data': request_data
                     })
 
-                if request_session and self.session:
-                    if cookie_payload:
-                        kwargs.update({
-                            'cookies': cookie_payload
-                        })
-
-                    log.debug(
-                        "Request Op: Request Base: Session: PUT",
-                        extra={
-                            'request_label': request_label,
-                            'kwargs': kwargs
-                        }
-                    )
-
-                    response = self.session.put(**kwargs)
-                else:
-                    log.debug(
-                        "Request Op: Request Base: Requests: PUT",
-                        extra={
-                            'request_label': request_label,
-                            'kwargs': kwargs
-                        }
-                    )
-                    response = requests.put(**kwargs)
+                response = tune_request.request(
+                    request_method="PUT",
+                    request_url=request_url,
+                    **kwargs
+                )
 
             elif request_method == 'HEAD':
                 if request_params:
                     request_url += \
                         "?" + urllib.parse.urlencode(request_params)
 
-                kwargs.update({
-                    'url': request_url
-                })
                 if headers:
                     kwargs.update({
                         'headers': headers
                     })
 
-                response = requests.head(**kwargs)
+                response = tune_request.request(
+                    request_method="HEAD",
+                    request_url=request_url,
+                    **kwargs
+                )
             else:
                 raise TuneRequestError(
                     error_message="Request: Unexpected 'request_method':'{}'".format(

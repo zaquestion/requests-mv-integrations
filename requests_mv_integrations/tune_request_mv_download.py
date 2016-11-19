@@ -8,71 +8,37 @@ TUNE Multiverse Request
 """
 
 from logging import getLogger
-
-import base64
-import copy
 import csv
 import datetime as dt
 import gzip
 import http.client as http_client
 import io
 import json
-import logging
 import os
 import re
 import time
-import urllib.parse
-from functools import partial
-
-import bs4
 import requests
-import requests_toolbelt
-import xmltodict
-
 from pprintpp import pprint
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 from requests_mv_integrations.errors.exceptions import (
-    TuneRequestError,
-    TuneRequestClientError,
-    TuneRequestServiceError,
     TuneRequestModuleError
 )
 from requests_mv_integrations.errors.errors_traceback import (
-    get_exception_message,
-    print_traceback
+    get_exception_message
 )
 from requests_mv_integrations.errors.exit_code import (
     IntegrationExitCode
 )
-from pyhttpstatus_utils import (
-    HttpStatusCode,
-    HttpStatusType,
-    http_status_code_to_desc,
-    http_status_code_to_type,
-    is_http_status_type,
-    is_http_status_successful
-)
 from requests_mv_integrations.support import (
-    command_line_request_curl,
     convert_size,
     detect_bom,
     base_class_name,
     python_check_version,
     remove_bom,
-    requests_response_text_html,
-    safe_dict,
-    safe_int,
-    safe_str,
-
-    __USER_AGENT__
+    safe_dict
 )
 from requests_mv_integrations import (
     __python_required_version__
-)
-
-from .tune_request import (
-    TuneRequest
 )
 
 from .tune_request_mv_integration import (
