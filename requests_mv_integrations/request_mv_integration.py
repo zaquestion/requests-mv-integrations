@@ -6,7 +6,6 @@
 TUNE Multiverse Request
 =======================
 """
-import sys
 import base64
 import copy
 import datetime as dt
@@ -22,8 +21,9 @@ import requests
 import requests_toolbelt
 import xmltodict
 from logging_mv_integrations import (
+    TuneLoggingFormat,
     TuneLoggingHandler,
-    TuneLoggingFormat
+    get_logger
 )
 from pprintpp import pprint
 from pyhttpstatus_utils import (
@@ -68,9 +68,6 @@ from requests_mv_integrations.support import (
 from requests_mv_integrations.support.tune_request import (
     TuneRequest
 )
-from .request_mv_integration_base import (
-    RequestMvIntegrationBase
-)
 
 python_check_version(__python_required_version__)
 
@@ -78,7 +75,7 @@ python_check_version(__python_required_version__)
 # @brief Request with retry class for TUNE Multiverse classes
 #
 # @namespace requests_mv_integrations.RequestMvIntegration
-class RequestMvIntegration(RequestMvIntegrationBase):
+class RequestMvIntegration(object):
     """Request with retry class for TUNE Multiverse classes
     """
 
@@ -117,43 +114,46 @@ class RequestMvIntegration(RequestMvIntegrationBase):
     def built_request_curl(self, value):
         self.__built_request_curl = value
 
+    __logger = None
+
+    @property
+    def logger(
+        self
+    ):
+        """Get Property: Logger
+        """
+        if self.__logger is None:
+            self.__logger = get_logger(
+                logger_name=__name__.split('.')[0],
+                logger_version=__version__,
+                logger_format=self.logger_format,
+                logger_level=self.logger_level
+            )
+
+        return self.__logger
+
     def __init__(
         self,
-        req_logger=None,
-        logger_name=None,
-        logger_level=logging.NOTSET,
-        logger_format=TuneLoggingFormat.JSON
+        logger_level=logging.INFO,
+        logger_format=TuneLoggingFormat.JSON,
     ):
-        # if logger_level == logging.NOTSET:
-        #     if self.req_logger:
-        #         logger_level = self.req_logger.logger_level
-        #     else:
-        #         logger_level = logging.INFO
-        #
-        # if req_logger:
-        #     assert type(req_logger).__name__ == 'TuneLogging'
-
-        super(RequestMvIntegration, self).__init__(
-            req_logger=req_logger,
-
-            logger_name=logger_name,
-            logger_level=logger_level,
-            logger_format=logger_format
-        )
+        self.logger_level = logger_level
+        self.logger_format = logger_format
 
         self._requests_logger()
 
     def _requests_logger(
         self
     ):
-        if self.req_logger:
-            request_logger_level = self.req_logger.logger_level
+        """Set logging format to package 'requests'"""
+        if self.logger:
+            request_logger_level = self.logger_level
 
             if request_logger_level == logging.INFO:
                 request_logger_level = logging.WARNING
 
             tune_loggin_handler = TuneLoggingHandler(
-                logger_format=self.req_logger.logger_format
+                logger_format=self.logger_format
             )
 
             tune_loggin_handler.add_logger_version(
@@ -233,9 +233,9 @@ class RequestMvIntegration(RequestMvIntegrationBase):
             * jitter: extra seconds added to delay between attempts.
                 default: 0.
         """
-        self.req_logger.debug(
+        self.logger.debug(
             "Request: Start: {}".format(
-                request_label
+                request_label if request_label else ""
             )
         )
 
@@ -306,9 +306,9 @@ class RequestMvIntegration(RequestMvIntegrationBase):
                 'request_json': request_json
             })
 
-        self.req_logger.debug(
+        self.logger.debug(
             "Request: Setup: {}".format(
-                request_label
+                request_label if request_label else ""
             ),
             extra=logger_extra
         )
@@ -355,12 +355,11 @@ class RequestMvIntegration(RequestMvIntegrationBase):
             request_retry_excps = REQUEST_RETRY_EXCPS
         self.request_retry_excps = request_retry_excps
 
-        self.req_logger.debug(
+        self.logger.debug(
             "Request: Details: {}".format(
-                request_label
+                request_label if request_label else ""
             ),
             extra={
-                'request_label': request_label,
                 'request_method': request_method,
                 'request_retry': request_retry,
                 'request_url': request_url,
@@ -488,7 +487,7 @@ class RequestMvIntegration(RequestMvIntegrationBase):
 
         request_time_msecs = int(diff_req.total_seconds() * 1000)
 
-        self.req_logger.debug(
+        self.logger.debug(
             "Request: Completed",
             extra={
                 'request_label': request_label,
@@ -539,24 +538,9 @@ class RequestMvIntegration(RequestMvIntegrationBase):
         Returns:
 
         """
-        self.req_logger.debug(
-            "Request Retry: Start: {}".format(
-                request_label
-            )
-        )
-
-        logger_label = \
-            "Request Retry: Request"
-
         request_retry_extra = {
             'timeout': timeout
         }
-
-        if request_label is not None:
-            logger_label = "{}: {}".format(logger_label, request_label)
-            request_retry_extra.update({
-                'request_label': request_label
-            })
 
         request_retry_extra.update({
             'request_retry_http_status_codes': self.request_retry_http_status_codes
@@ -570,7 +554,6 @@ class RequestMvIntegration(RequestMvIntegrationBase):
 
         if request_retry_func is not None:
             request_retry_func_name = request_retry_func.__name__
-            logger_label = "{}: {}".format(logger_label, request_label)
             request_retry_extra.update({
                 'request_retry_func': request_retry_func_name
             })
@@ -581,8 +564,10 @@ class RequestMvIntegration(RequestMvIntegrationBase):
                 'request_retry_excps_func': request_retry_excps_func_name
             })
 
-        self.req_logger.debug(
-            msg="{}: Begin".format(logger_label),
+        self.logger.debug(
+            "Request Retry: Start: {}".format(
+                request_label if request_label else ""
+            ),
             extra=request_retry_extra
         )
 
@@ -603,8 +588,11 @@ class RequestMvIntegration(RequestMvIntegrationBase):
             fkwargs['timeout'] = _timeout
             request_func = partial(call_func, *args, **kwargs)
 
-            self.req_logger.debug(
-                msg="{}: Attempt: {}".format(logger_label, _attempts),
+            self.logger.debug(
+                "Request Retry: Attempt: {}: {}".format(
+                    request_label if request_label else "",
+                    _attempts
+                ),
                 extra={
                     'attempts': _attempts,
                     'timeout': _timeout,
@@ -628,7 +616,7 @@ class RequestMvIntegration(RequestMvIntegrationBase):
                         exit_code=IntegrationExitCode.MOD_ERR_UNEXPECTED_VALUE
                     )
 
-                self.req_logger.debug(
+                self.logger.debug(
                     "Request Retry: Checking Response",
                     extra={
                         'request_url': request_url,
@@ -638,7 +626,7 @@ class RequestMvIntegration(RequestMvIntegrationBase):
 
                 if request_retry_func:
                     if not request_retry_func(response):
-                        self.req_logger.debug(
+                        self.logger.debug(
                             "Request Retry: Response: Valid: Not Retry Candidate",
                             extra={
                                 'request_url': request_url,
@@ -647,7 +635,7 @@ class RequestMvIntegration(RequestMvIntegrationBase):
                         )
                         return response
                 else:
-                    self.req_logger.debug(
+                    self.logger.debug(
                         "Request Retry: Response: Valid",
                         extra={
                             'request_url': request_url,
@@ -656,7 +644,7 @@ class RequestMvIntegration(RequestMvIntegrationBase):
                     )
                     return response
 
-                self.req_logger.debug(
+                self.logger.debug(
                     "Request Retry: Response: Valid: Retry Candidate",
                     extra={
                         'request_url': request_url,
@@ -667,7 +655,7 @@ class RequestMvIntegration(RequestMvIntegrationBase):
             except self.request_retry_excps as retry_ex:
                 error_exception = retry_ex
 
-                self.req_logger.warning(
+                self.logger.warning(
                     "Request Retry: Expected: {}: Retry Candidate".format(
                         base_class_name(error_exception)
                     ),
@@ -679,7 +667,7 @@ class RequestMvIntegration(RequestMvIntegrationBase):
                 )
 
                 if not _tries:
-                    self.req_logger.error(
+                    self.logger.error(
                         "Request Retry: Expected: {}: Exhausted Retries".format(
                             base_class_name(error_exception)
                         )
@@ -697,7 +685,7 @@ class RequestMvIntegration(RequestMvIntegrationBase):
 
                 if not request_retry_excps_func or \
                         not request_retry_excps_func(tmv_ex, request_label):
-                    self.req_logger.error(
+                    self.logger.error(
                         "Request Retry: Integration: {}: Not Retry Candidate".format(
                             base_class_name(error_exception)
                         ),
@@ -705,7 +693,7 @@ class RequestMvIntegration(RequestMvIntegrationBase):
                     )
                     raise
 
-                self.req_logger.warning(
+                self.logger.warning(
                     "Request Retry: Integration: {}: Retry Candidate".format(
                         base_class_name(error_exception)
                     ),
@@ -713,7 +701,7 @@ class RequestMvIntegration(RequestMvIntegrationBase):
                 )
 
                 if not _tries:
-                    self.req_logger.error(
+                    self.logger.error(
                         "Request Retry: Integration: {}: Exhausted Retries".format(
                             base_class_name(error_exception)
                         )
@@ -731,7 +719,7 @@ class RequestMvIntegration(RequestMvIntegrationBase):
 
                 if not request_retry_excps_func or \
                         not request_retry_excps_func(error_exception, request_label):
-                    self.req_logger.error(
+                    self.logger.error(
                         "Request Retry: Unexpected: {}: Not Retry Candidate".format(
                             base_class_name(error_exception)
                         ),
@@ -739,7 +727,7 @@ class RequestMvIntegration(RequestMvIntegrationBase):
                     )
                     raise
 
-                self.req_logger.warning(
+                self.logger.warning(
                     "Request Retry: Unexpected: {}: Retry Candidate".format(
                         base_class_name(error_exception)
                     ),
@@ -757,7 +745,7 @@ class RequestMvIntegration(RequestMvIntegrationBase):
                     )
 
             if not _tries:
-                self.req_logger.error(
+                self.logger.error(
                     "Request Retry: Exhausted Retries",
                     extra={
                         'attempts': _attempts,
@@ -778,7 +766,7 @@ class RequestMvIntegration(RequestMvIntegrationBase):
                     exit_code=IntegrationExitCode.MOD_ERR_RETRY_EXHAUSTED
                 )
 
-            self.req_logger.info(
+            self.logger.info(
                 "Request Retry: Performing Retry",
                 extra={
                     'tries': _tries,
@@ -858,12 +846,11 @@ class RequestMvIntegration(RequestMvIntegrationBase):
 
         self.session = tune_request.session
 
-        self.req_logger.debug(
-            "Request Op: Details: {}".format(
-                request_label
+        self.logger.debug(
+            "Send Request: Details: {}".format(
+                request_label if request_label else ""
             ),
             extra={
-                'request_label': request_label,
                 'request_method': request_method,
                 'request_url': request_url,
                 'request_params': request_params,
@@ -893,18 +880,18 @@ class RequestMvIntegration(RequestMvIntegrationBase):
         self.built_request_curl = None
 
         if request_session:
-            self.req_logger.debug(
-                "Request Op: Session: Requested"
+            self.logger.debug(
+                "Send Request: Session: Requested"
             )
 
             if self.session is None:
-                self.req_logger.debug(
-                    "Request Op: Session: New"
+                self.logger.debug(
+                    "Send Request: Session: New"
                 )
                 self.session = requests.Session()
 
-            self.req_logger.debug(
-                "Request Op: Session: Existing",
+            self.logger.debug(
+                "Send Request: Session: Existing",
                 extra={
                     'cookie_payload': self.session.cookies.get_dict(),
                     'request_label': request_label
@@ -933,21 +920,20 @@ class RequestMvIntegration(RequestMvIntegrationBase):
             'timeout': timeout,
             'request_params': safe_dict(request_params),
             'request_data': request_data_extra,
-            'request_headers': safe_dict(headers),
-            'request_label': request_label
+            'request_headers': safe_dict(headers)
         }
 
         if verbose:
-            self.req_logger.info(
-                "Request Op: Details: {}".format(
-                    request_label
+            self.logger.info(
+                "Send Request: Details: {}".format(
+                    request_label if request_label else ""
                 ),
                 extra=request_extra
             )
         else:
-            self.req_logger.debug(
-                "Request Op: Details: {}".format(
-                    request_label
+            self.logger.debug(
+                "Send Request: Details: {}".format(
+                    request_label if request_label else ""
                 ),
                 extra=request_extra
             )
@@ -1006,8 +992,8 @@ class RequestMvIntegration(RequestMvIntegrationBase):
                         request_allow_redirects=allow_redirects
                     )
 
-                    self.req_logger.debug(
-                        "Request Op: Request Base: GET",
+                    self.logger.debug(
+                        "Send Request: Request Base: GET",
                         extra={
                             'request_label': request_label,
                             'request_method': request_method,
@@ -1044,8 +1030,8 @@ class RequestMvIntegration(RequestMvIntegrationBase):
                         request_allow_redirects=allow_redirects
                     )
 
-                    self.req_logger.debug(
-                        "Request Op: Request Base: POST",
+                    self.logger.debug(
+                        "Send Request: Request Base: POST",
                         extra={
                             'request_label': request_label,
                             'request_method': request_method,
@@ -1085,8 +1071,8 @@ class RequestMvIntegration(RequestMvIntegrationBase):
                         request_allow_redirects=allow_redirects
                     )
 
-                    self.req_logger.debug(
-                        "Request Op: Request Base: PUT",
+                    self.logger.debug(
+                        "Send Request: Request Base: PUT",
                         extra={
                             'request_label': request_label,
                             'request_curl': self.built_request_curl
@@ -1135,8 +1121,8 @@ class RequestMvIntegration(RequestMvIntegrationBase):
                 )
 
         except Exception as ex:
-            self.req_logger.error(
-                "Request Op: Request Base: Error",
+            self.logger.error(
+                "Send Request: Request Base: Error",
                 extra={
                     'request_label': request_label,
                     'error_exception': base_class_name(ex),
@@ -1165,13 +1151,13 @@ class RequestMvIntegration(RequestMvIntegrationBase):
         }
 
         if verbose:
-            self.req_logger.info(
-                "Request Op: Response: Details",
+            self.logger.info(
+                "Send Request: Response: Details",
                 extra=response_extra
             )
         else:
-            self.req_logger.debug(
-                "Request Op: Response: Details",
+            self.logger.debug(
+                "Send Request: Response: Details",
                 extra=response_extra
             )
 
@@ -1194,19 +1180,19 @@ class RequestMvIntegration(RequestMvIntegrationBase):
                 })
 
             if verbose:
-                self.req_logger.info(
-                    "Request Op: Response: Success",
+                self.logger.info(
+                    "Send Request: Response: Success",
                     extra=response_extra
                 )
             else:
-                self.req_logger.debug(
-                    "Request Op: Response: Success",
+                self.logger.debug(
+                    "Send Request: Response: Success",
                     extra=response_extra
                 )
 
             if request_session:
-                self.req_logger.debug(
-                    "Request Op: Session: Payload",
+                self.logger.debug(
+                    "Send Request: Session: Payload",
                     extra={
                         'cookie_payload': self.session.cookies.get_dict(),
                         'request_label': request_label
@@ -1220,8 +1206,8 @@ class RequestMvIntegration(RequestMvIntegrationBase):
                 'error_request_curl': self.built_request_curl
             })
 
-            self.req_logger.error(
-                "Request Op: Response: Failed",
+            self.logger.error(
+                "Send Request: Response: Failed",
                 extra=response_extra
             )
 
@@ -1250,8 +1236,8 @@ class RequestMvIntegration(RequestMvIntegrationBase):
                     'error_request_curl': self.built_request_curl
                 })
 
-            self.req_logger.error(
-                "Request Op: Error: Response: Details",
+            self.logger.error(
+                "Send Request: Error: Response: Details",
                 extra=extra_error
             )
 
@@ -1300,8 +1286,8 @@ class RequestMvIntegration(RequestMvIntegrationBase):
             extra_unhandled.update({
                 'http_status_code': http_status_code
             })
-            self.req_logger.error(
-                "Request Op: Error: Unhandled",
+            self.logger.error(
+                "Send Request: Error: Unhandled",
                 extra=extra_unhandled
             )
 
@@ -1329,7 +1315,7 @@ class RequestMvIntegration(RequestMvIntegrationBase):
             })
 
         if not response:
-            self.req_logger.error(
+            self.logger.error(
                 "Validate Response: Failed: None",
                 extra=response_extra
             )
@@ -1340,7 +1326,7 @@ class RequestMvIntegration(RequestMvIntegrationBase):
                 exit_code=IntegrationExitCode.MOD_ERR_SOFTWARE
             )
         else:
-            self.req_logger.debug(
+            self.logger.debug(
                 "Validate Response: Defined",
                 extra=response_extra
             )
@@ -1387,7 +1373,7 @@ class RequestMvIntegration(RequestMvIntegrationBase):
         if not is_http_status_successful(
             http_status_code=response.status_code
         ):
-            self.req_logger.error(
+            self.logger.error(
                 "Validate Response: Failed",
                 extra=response_extra
             )
@@ -1398,7 +1384,7 @@ class RequestMvIntegration(RequestMvIntegrationBase):
                 exit_code=IntegrationExitCode.MOD_ERR_SOFTWARE
             )
         else:
-            self.req_logger.debug(
+            self.logger.debug(
                 "Validate Response: Success",
                 extra=response_extra
             )
@@ -1494,7 +1480,7 @@ class RequestMvIntegration(RequestMvIntegrationBase):
             'raise_ex_if_not_json_response': raise_ex_if_not_json_response
         })
 
-        self.req_logger.debug(
+        self.logger.debug(
             "Validate JSON Response: Details",
             extra=response_extra
         )
@@ -1533,7 +1519,7 @@ class RequestMvIntegration(RequestMvIntegrationBase):
                 'response_content_length': response_content_length
             })
         except json.decoder.JSONDecodeError as json_decode_ex:
-            self.req_logger.error(
+            self.logger.error(
                 "Validate JSON Response: Failed: JSONDecodeError",
                 extra=response_extra
             )
@@ -1552,7 +1538,7 @@ class RequestMvIntegration(RequestMvIntegrationBase):
             )
 
         except Exception as ex:
-            self.req_logger.error(
+            self.logger.error(
                 "Validate JSON Response: Failed: Exception",
                 extra=response_extra
             )
@@ -1569,7 +1555,7 @@ class RequestMvIntegration(RequestMvIntegrationBase):
 
         if json_response is None:
             if raise_ex_if_not_json_response:
-                self.req_logger.error(
+                self.logger.error(
                     "Validate JSON Response: Failed: None",
                     extra=response_extra
                 )
@@ -1580,12 +1566,12 @@ class RequestMvIntegration(RequestMvIntegrationBase):
                     exit_code=IntegrationExitCode.MOD_ERR_SOFTWARE
                 )
             else:
-                self.req_logger.warning(
+                self.logger.warning(
                     "Validate JSON Response: None",
                     extra=response_extra
                 )
         else:
-            self.req_logger.debug(
+            self.logger.debug(
                 "Validate JSON Response: Valid",
                 extra=response_extra
             )
@@ -1807,7 +1793,7 @@ class RequestMvIntegration(RequestMvIntegrationBase):
                 'error_details': get_exception_message(response_decode_ex)
             })
 
-        self.req_logger.error(
+        self.logger.error(
             "Validate JSON Response: Failed: Invalid",
             extra=response_extra
         )

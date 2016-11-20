@@ -9,11 +9,6 @@ TUNE Multiverse Request
 
 
 import requests
-
-
-from requests_mv_integrations import (
-    __version__
-)
 from requests_mv_integrations.errors.exceptions import (
     TuneRequestError,
     TuneRequestModuleError
@@ -105,7 +100,7 @@ class RequestMvIntegrationUpload(RequestMvIntegration):
             'upload_request_headers': upload_request_headers
         }
 
-        self.req_logger.debug(
+        self.logger.debug(
             "Upload: Details",
             extra=upload_extra
         )
@@ -134,7 +129,7 @@ class RequestMvIntegrationUpload(RequestMvIntegration):
                 'error_exception': base_class_name(tmv_ex)
             })
 
-            self.req_logger.error(
+            self.logger.error(
                 "Request Upload: Failed",
                 extra=tmv_ex_extra
             )
@@ -142,7 +137,7 @@ class RequestMvIntegrationUpload(RequestMvIntegration):
             raise
 
         except Exception as ex:
-            self.req_logger.error(
+            self.logger.error(
                 "Request Upload: Failed: Unexpected",
                 extra={
                     'error_exception': base_class_name(ex),
@@ -182,7 +177,7 @@ class RequestMvIntegrationUpload(RequestMvIntegration):
         Returns:
             requests.Response
         """
-        self.req_logger.info(
+        self.logger.info(
             "Uploading Data",
             extra={
                 'upload_data_size': upload_data_size,
@@ -230,7 +225,7 @@ class RequestMvIntegrationUpload(RequestMvIntegration):
                 'error_exception': base_class_name(tmv_ex)
             })
 
-            self.req_logger.error(
+            self.logger.error(
                 "Upload: Failed",
                 extra=tmv_ex_extra
             )
@@ -239,7 +234,7 @@ class RequestMvIntegrationUpload(RequestMvIntegration):
         except Exception as ex:
             print_traceback(ex)
 
-            self.req_logger.error(
+            self.logger.error(
                 "Upload: Failed: Unexpected",
                 extra={
                     'error_exception': base_class_name(ex),
@@ -275,7 +270,7 @@ class RequestMvIntegrationUpload(RequestMvIntegration):
         error_details = get_exception_message(excp)
 
         if isinstance(excp, TuneRequestError):
-            self.req_logger.debug(
+            self.logger.debug(
                 "Request Retry: Upload Exception Func",
                 extra={
                     'request_label': request_label,
@@ -284,7 +279,7 @@ class RequestMvIntegrationUpload(RequestMvIntegration):
                 }
             )
         else:
-            self.req_logger.debug(
+            self.logger.debug(
                 "Request Retry: Upload Exception Func: Unexpected",
                 extra={
                     'request_label': request_label,
@@ -297,7 +292,7 @@ class RequestMvIntegrationUpload(RequestMvIntegration):
                 excp.exit_code == IntegrationExitCode.MOD_ERR_REQUEST_CONNECT:
             if error_details.find('RemoteDisconnected') >= 0 or \
                     error_details.find('ConnectionResetError') >= 0:
-                self.req_logger.debug(
+                self.logger.debug(
                     "Request Retry: Upload Exception Func: Retry",
                     extra={
                         'request_label': request_label,
@@ -310,7 +305,7 @@ class RequestMvIntegrationUpload(RequestMvIntegration):
         if isinstance(excp, requests.exceptions.ConnectionError):
             if error_details.find('RemoteDisconnected') >= 0 or \
                     error_details.find('ConnectionResetError') >= 0:
-                self.req_logger.debug(
+                self.logger.debug(
                     "Request Retry: Upload Exception Func: Retry",
                     extra={
                         'request_label': request_label,
@@ -320,7 +315,7 @@ class RequestMvIntegrationUpload(RequestMvIntegration):
                 )
                 return True
 
-        self.req_logger.debug(
+        self.logger.debug(
             "Request Retry: Upload Exception Func: Not Retry",
             extra={
                 'request_label': request_label,

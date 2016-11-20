@@ -12,11 +12,9 @@ import copy
 import hashlib
 import json
 import re
-import resource
 import sys
 import urllib.parse
 import xmltodict
-# from pprintpp import pprint
 
 import six
 from bs4 import BeautifulSoup
@@ -371,28 +369,6 @@ def full_class_name(obj):
 
 def safe_cost(val):
     return safe_float(val, ndigits=4)
-
-
-def log_memory_usage(
-    ru_maxrss_start=None
-):
-    """Log Memory Usage
-
-    Returns:
-
-    """
-    ru_maxrss_current = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-
-    if ru_maxrss_start is not None:
-        ru_maxrss_diff = ru_maxrss_current - ru_maxrss_start
-        return {
-            'memory_used': convert_size(ru_maxrss_diff)
-        }
-    else:
-        ru_maxrss_diff = 0
-        return {
-            'memory_used': convert_size(ru_maxrss_diff)
-        }
 
 
 def create_request_url(
@@ -769,18 +745,3 @@ def requests_response_text_xml(
 
     return xml_json
 
-
-def merge_dicts(dict1, dict2):
-    for k in set(dict1.keys()).union(dict2.keys()):
-        if k in dict1 and k in dict2:
-            if isinstance(dict1[k], dict) and isinstance(dict2[k], dict):
-                yield (k, dict(merge_dicts(dict1[k], dict2[k])))
-            else:
-                # If one of the values is not a dict, you can't continue merging it.
-                # Value from second dict overrides one in first and we move on.
-                yield (k, dict2[k])
-                # Alternatively, replace this with exception raiser to alert you of value conflicts
-        elif k in dict1:
-            yield (k, dict1[k])
-        else:
-            yield (k, dict2[k])

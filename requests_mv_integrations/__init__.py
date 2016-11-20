@@ -18,9 +18,6 @@ from requests_mv_integrations.support.tune_request import (
     TuneRequest
 )
 
-from .request_mv_integration_base import (
-    RequestMvIntegrationBase
-)
 from .request_mv_integration import (
     RequestMvIntegration,
 )
