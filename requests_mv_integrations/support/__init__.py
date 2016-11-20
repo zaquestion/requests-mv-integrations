@@ -4,22 +4,6 @@
 #  @namespace requests_mv_integrations
 
 from .constants import (
-    SECONDS_FOR_5_MINUTES,
-    SECONDS_FOR_30_MINUTES,
-    SECONDS_FOR_HALF_HOUR,
-    SECONDS_FOR_55_MINUTES,
-    SECONDS_FOR_60_MINUTES,
-    SECONDS_FOR_1_HOUR,
-    SECONDS_FOR_2_HOURS,
-    SECONDS_FOR_3_HOURS,
-    SECONDS_FOR_6_HOURS,
-    SECONDS_FOR_23_AND_HALF_HOURS,
-    SECONDS_FOR_1_DAY,
-    SECONDS_FOR_2_DAYS,
-    SECONDS_FOR_30_DAYS,
-
-    IRONCACHE_MAX_SIZE,
-
     HEADER_CONTENT_TYPE_APP_JSON,
     HEADER_CONTENT_TYPE_APP_URLENCODED,
     HEADER_USER_AGENT,
@@ -34,12 +18,6 @@ from .constants import (
     REQUEST_RETRY_EXCPS,
     REQUEST_RETRY_HTTP_STATUS_CODES
 )
-from .datetime_utils import (
-    get_current_date,
-    get_cumulative_report_hour,
-    get_epoch_datetime,
-    get_start_end_datetime
-)
 from .utils import (
     base_class_name,
     full_class_name,
@@ -48,7 +26,6 @@ from .utils import (
     detect_bom,
     determine_encoding,
     json_encode,
-    log_memory_usage,
     print_version,
     python_check_version,
     remove_bom,
@@ -74,7 +51,5 @@ from .utils import (
     command_line_request_curl_post,
 
     create_request_url,
-    create_hash_key,
-
-    merge_dicts
+    create_hash_key
 )

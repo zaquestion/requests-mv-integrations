@@ -18,11 +18,12 @@ PKG_SUFFIX := py3-none-any.whl
 VERSION := $(shell $(PYTHON3) setup.py version)
 REQUESTS_MV_INTGS_WHEEL_ARCHIVE := dist/$(REQUESTS_MV_INTGS_PKG_PREFIX)-$(VERSION)-$(PKG_SUFFIX)
 
-MV_INTEGRATION_FILES := $(shell find pycountry-convert ! -name '__init__.py' -type f -name "*.py")
+REQUESTS_MV_INTGS_FILES := $(shell find $(REQUESTS_MV_INTGS_PKG_PREFIX) ! -name '__init__.py' -type f -name "*.py")
+
 LINT_REQ_FILE := requirements-pylint.txt
 REQ_FILE      := requirements.txt
 SETUP_FILE    := setup.py
-ALL_FILES     := $(MV_INTEGRATION_FILES) $(REQ_FILE) $(SETUP_FILE)
+ALL_FILES     := $(REQUESTS_MV_INTGS_FILES) $(REQ_FILE) $(SETUP_FILE)
 
 # Report the current pycountry-convert version.
 version:
@@ -63,7 +64,7 @@ dist: clean
 	$(PYTHON3) $(SETUP_FILE) sdist --format=zip,gztar
 	ls -al ./dist/$(REQUESTS_MV_INTGS_PKG_PREFIX_PATTERN)
 
-uninstall:
+uninstall: clean
 	@echo "======================================================"
 	@echo uninstall $(REQUESTS_MV_INTGS_PKG)
 	@echo "======================================================"
@@ -134,16 +135,16 @@ lint-requirements: $(LINT_REQ_FILE)
 	$(PIP3) install --upgrade -f $(LINT_REQ_FILE)
 
 pep8: lint-requirements
-	@echo pep8: $(MV_INTEGRATION_FILES)
-	$(PYTHON3) -m pep8 --config .pep8 $(MV_INTEGRATION_FILES)
+	@echo pep8: $(REQUESTS_MV_INTGS_FILES)
+	$(PYTHON3) -m pep8 --config .pep8 $(REQUESTS_MV_INTGS_FILES)
 
 pyflakes: lint-requirements
-	@echo pyflakes: $(MV_INTEGRATION_FILES)
-	$(PYTHON3) -m pyflakes $(MV_INTEGRATION_FILES)
+	@echo pyflakes: $(REQUESTS_MV_INTGS_FILES)
+	$(PYTHON3) -m pyflakes $(REQUESTS_MV_INTGS_FILES)
 
 pylint: lint-requirements
-	@echo pylint: $(MV_INTEGRATION_FILES)
-	$(PYTHON3) -m pylint --rcfile .pylintrc $(MV_INTEGRATION_FILES) --disable=C0330,F0401,E0611,E0602,R0903,C0103,E1121,R0913,R0902,R0914,R0912,W1202,R0915,C0302 | more -30
+	@echo pylint: $(REQUESTS_MV_INTGS_FILES)
+	$(PYTHON3) -m pylint --rcfile .pylintrc $(REQUESTS_MV_INTGS_FILES) --disable=C0330,F0401,E0611,E0602,R0903,C0103,E1121,R0913,R0902,R0914,R0912,W1202,R0915,C0302 | more -30
 
 site-packages:
 	@echo $(PYTHON3_SITE_PACKAGES)

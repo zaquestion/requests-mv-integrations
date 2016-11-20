@@ -4,7 +4,6 @@
 #  @namespace requests_mv_integrations
 
 from logging import getLogger
-from pprintpp import pprint
 import grequests
 import requests
 from requests.adapters import (HTTPAdapter, DEFAULT_POOLSIZE)
