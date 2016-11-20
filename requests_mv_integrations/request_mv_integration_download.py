@@ -7,7 +7,7 @@ TUNE Multiverse Request
 =======================
 """
 
-from logging import getLogger
+import logging
 import csv
 import datetime as dt
 import gzip
@@ -20,13 +20,13 @@ import time
 import requests
 from pprintpp import pprint
 
-from requests_mv_integrations.errors.exceptions import (
-    TuneRequestModuleError
+
+from requests_mv_integrations import (
+    __python_required_version__
 )
-from requests_mv_integrations.errors.errors_traceback import (
-    get_exception_message
-)
-from requests_mv_integrations.errors.exit_code import (
+from requests_mv_integrations.errors import (
+    TuneRequestModuleError,
+    get_exception_message,
     IntegrationExitCode
 )
 from requests_mv_integrations.support import (
@@ -37,20 +37,27 @@ from requests_mv_integrations.support import (
     remove_bom,
     safe_dict
 )
-from requests_mv_integrations import (
-    __python_required_version__
+from .request_mv_integration import (
+    RequestMvIntegration
 )
-
-from .tune_request_mv_integration import (
-    TuneRequestMvIntegration
+from logging_mv_integrations import (
+    TuneLoggingFormat
 )
-
-log = getLogger(__name__)
 
 python_check_version(__python_required_version__)
 
 
-class TuneRequestMvDownload(TuneRequestMvIntegration):
+class RequestMvIntegrationDownload(RequestMvIntegration):
+
+    def __init__(
+        self,
+        logger_level=logging.INFO,
+        logger_format=TuneLoggingFormat.JSON,
+    ):
+        super(RequestMvIntegrationDownload, self).__init__(
+            logger_level=logger_level,
+            logger_format=logger_format
+        )
 
     def request_csv_download(
         self,
@@ -118,7 +125,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
             Generator containing CSV data by rows in JSON dictionary format.
 
         """
-        log.info(
+        self.req_logger.info(
             "Request CSV Download: Start",
             extra={
                 'request_url': request_url,
@@ -137,7 +144,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
         while _tries:
             _attempts += 1
 
-            log.info(
+            self.req_logger.info(
                 "Request CSV Download: Attempt: {}".format(
                     _attempts
                 ),
@@ -169,7 +176,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
             )
 
             if response is None:
-                log.error(
+                self.req_logger.error(
                     "Request CSV Download: No response",
                     extra={
                         'request_url': request_url,
@@ -197,7 +204,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
                         )
                     )
 
-            log.debug(
+            self.req_logger.debug(
                 "Request CSV Download: Response Status",
                 extra={
                     'http_status_code': http_status_code,
@@ -222,7 +229,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
 
             _tries -= 1
             if not _tries:
-                log.error(
+                self.req_logger.error(
                     "Request CSV Download: Exhausted Retries",
                     extra={
                         'tries': _tries,
@@ -238,7 +245,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
                     exit_code=IntegrationExitCode.MOD_ERR_RETRY_EXHAUSTED
                 )
 
-            log.info(
+            self.req_logger.info(
                 "Request CSV Download: Performing Retry",
                 extra={
                     'tries': _tries,
@@ -250,7 +257,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
 
             time.sleep(_delay)
 
-        log.info(
+        self.req_logger.info(
             "Request CSV Download: Downloaded",
             extra={
                 'request_label': request_label,
@@ -269,7 +276,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
                 csv_report_name = csv_file_r.readline()
                 csv_report_name = re.sub('\"', '', csv_report_name)
                 csv_report_name = re.sub('\n', '', csv_report_name)
-                log.info(
+                self.req_logger.info(
                     "Request CSV Download: Report '{}'".format(
                         csv_report_name
                     )
@@ -290,7 +297,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
                 })
                 index += 1
 
-            log.info(
+            self.req_logger.info(
                 "Request CSV Download: Content Header",
                 extra={
                     'csv_header': csv_header_hr
@@ -366,7 +373,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
             Generator containing JSON data by rows in JSON dictionary format.
 
         """
-        log.debug(
+        self.req_logger.debug(
             "Request JSON Download",
             extra={
                 'request_url': request_url,
@@ -385,7 +392,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
         while _tries:
             _attempts += 1
 
-            log.info(
+            self.req_logger.info(
                 "Request JSON Download",
                 extra={
                     'attempts': _attempts,
@@ -415,7 +422,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
             )
 
             if response is None:
-                log.error(
+                self.req_logger.error(
                     "Request JSON Download: No response",
                     extra={
                         'request_url': request_url,
@@ -443,7 +450,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
                         )
                     )
 
-            log.debug(
+            self.req_logger.debug(
                 "Request JSON Download: Response Status",
                 extra={
                     'http_status_code': http_status_code,
@@ -464,7 +471,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
                 )
 
             if os.path.exists(tmp_json_file_path):
-                log.debug(
+                self.req_logger.debug(
                     "Request JSON Download: Removing",
                     extra={
                         'file_path': tmp_json_file_path
@@ -474,7 +481,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
 
             mode_write = 'wb' if encoding_write is None else 'w'
 
-            log.debug(
+            self.req_logger.debug(
                 "Request JSON Download: Download Raw",
                 extra={
                     'file_path': tmp_json_file_path,
@@ -491,7 +498,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
                 mode=mode_write,
                 encoding=encoding_write
             ) as json_raw_file_w:
-                log.debug(
+                self.req_logger.debug(
                     "Request JSON Download: Response Raw: Started",
                     extra={
                         'file_path': tmp_json_file_path,
@@ -516,7 +523,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
                         json_raw_file_w.flush()
                         os.fsync(json_raw_file_w.fileno())
 
-                    log.debug(
+                    self.req_logger.debug(
                         "Request JSON Download: By Chunk: Completed",
                         extra={
                             'file_path': tmp_json_file_path,
@@ -530,7 +537,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
                     error_exception = base_class_name(chunked_encoding_ex)
                     error_details = get_exception_message(chunked_encoding_ex)
 
-                    log.warning(
+                    self.req_logger.warning(
                         "Request JSON Download: {}".format(
                             error_exception
                         ),
@@ -542,7 +549,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
                     )
 
                     if not _tries:
-                        log.error(
+                        self.req_logger.error(
                             "Request JSON Download: {}: Exhausted Retries".format(
                                 error_exception
                             )
@@ -553,7 +560,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
                     error_exception = base_class_name(incomplete_read_ex)
                     error_details = get_exception_message(incomplete_read_ex)
 
-                    log.warning(
+                    self.req_logger.warning(
                         "Request JSON Download: IncompleteRead",
                         extra={
                             'error_exception': error_exception,
@@ -564,7 +571,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
                     )
 
                     if not _tries:
-                        log.error(
+                        self.req_logger.error(
                             "Request JSON Download: {}: Exhausted Retries".format(
                                 error_exception
                             )
@@ -572,7 +579,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
                         raise
 
                 except requests.exceptions.RequestException as request_ex:
-                    log.error(
+                    self.req_logger.error(
                         "Request JSON Download: Request Exception",
                         extra={
                             'error_exception': base_class_name(request_ex),
@@ -584,7 +591,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
                     raise
 
                 except Exception as ex:
-                    log.error(
+                    self.req_logger.error(
                         "Request JSON Download: Unexpected Exception",
                         extra={
                             'error_exception': base_class_name(ex),
@@ -596,7 +603,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
                     raise
 
                 if not _tries:
-                    log.error(
+                    self.req_logger.error(
                         "Request JSON Download: Exhausted Retries",
                         extra={
                             'tries': _tries,
@@ -616,7 +623,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
                         exit_code=IntegrationExitCode.MOD_ERR_RETRY_EXHAUSTED
                     )
 
-                log.info(
+                self.req_logger.info(
                     "Request JSON Download: Performing Retry",
                     extra={
                         'tries': _tries,
@@ -631,7 +638,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
         tmp_json_file_size = os.path.getsize(tmp_json_file_path)
         bom_enc, bom_len, bom_header = detect_bom(tmp_json_file_path)
 
-        log.info(
+        self.req_logger.info(
             "Request JSON Download: By Chunk: Completed: Details",
             extra={
                 'file_path': tmp_json_file_path,
@@ -656,7 +663,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
                 mode=mode_write,
                 encoding=encoding_write
             ) as json_file_w:
-                log.debug(
+                self.req_logger.debug(
                     "Request JSON Download: GZip: Started",
                     extra={
                         'file_path': tmp_json_file_path,
@@ -673,7 +680,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
             'request_label': request_label
         }
 
-        log.info(
+        self.req_logger.info(
             "Request JSON Download: Read Downloaded",
             extra=response_extra
         )
@@ -707,7 +714,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
                     'json_file_content_len': len(json_file_content)
                 })
 
-                log.error(
+                self.req_logger.error(
                     "Request JSON Download: Failed: Exception",
                     extra=response_extra
                 )
@@ -724,7 +731,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
             'json_file_content_len': len(json_download)
         })
 
-        log.info(
+        self.req_logger.info(
             "Request JSON Download: Finished",
             extra=response_extra
         )
@@ -740,7 +747,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
         encoding_write=None,
         decode_unicode=False
     ):
-        log.debug(
+        self.req_logger.debug(
             "Download CSV: Start"
         )
 
@@ -754,7 +761,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
             )
 
         if os.path.exists(tmp_csv_file_path):
-            log.debug(
+            self.req_logger.debug(
                 "Removing previous CSV",
                 extra={
                     'file_path': tmp_csv_file_path
@@ -764,7 +771,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
 
         mode_write = 'wb' if encoding_write is None else 'w'
 
-        log.debug(
+        self.req_logger.debug(
             "Download CSV: Details",
             extra={
                 'file_path': tmp_csv_file_path,
@@ -781,7 +788,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
             mode=mode_write,
             encoding=encoding_write
         ) as csv_file_wb:
-            log.debug(
+            self.req_logger.debug(
                 "Download CSV: By Chunk: Started",
                 extra={
                     'file_path': tmp_csv_file_path,
@@ -806,7 +813,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
                     csv_file_wb.flush()
                     os.fsync(csv_file_wb.fileno())
 
-                log.debug(
+                self.req_logger.debug(
                     "Download CSV: By Chunk: Completed",
                     extra={
                         'file_path': tmp_csv_file_path,
@@ -818,7 +825,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
                 error_exception = base_class_name(chunked_encoding_ex)
                 error_details = get_exception_message(chunked_encoding_ex)
 
-                log.warning(
+                self.req_logger.warning(
                     "Download CSV: ChunkedEncodingError",
                     extra={
                         'error_exception': error_exception,
@@ -834,7 +841,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
                 error_exception = base_class_name(incomplete_read_ex)
                 error_details = get_exception_message(incomplete_read_ex)
 
-                log.warning(
+                self.req_logger.warning(
                     "Download CSV: IncompleteRead",
                     extra={
                         'error_exception': error_exception,
@@ -847,7 +854,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
                 return (None, 0)
 
             except requests.exceptions.RequestException as request_ex:
-                log.error(
+                self.req_logger.error(
                     "Download CSV: Request Exception",
                     extra={
                         'error_exception': base_class_name(request_ex),
@@ -859,7 +866,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
                 raise
 
             except Exception as ex:
-                log.error(
+                self.req_logger.error(
                     "Download CSV: Unexpected Exception",
                     extra={
                         'error_exception': base_class_name(ex),
@@ -873,7 +880,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
         tmp_csv_file_size = os.path.getsize(tmp_csv_file_path)
         bom_enc, bom_len, bom_header = detect_bom(tmp_csv_file_path)
 
-        log.debug(
+        self.req_logger.debug(
             "Download CSV: By Chunk: Completed: Details",
             extra={
                 'file_path': tmp_csv_file_path,
@@ -902,7 +909,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
             tmp_csv_file_path_wo_bom
         )
 
-        log.debug(
+        self.req_logger.debug(
             "Download CSV: Encoding",
             extra={
                 'bom_enc': bom_enc,
@@ -941,7 +948,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
         Returns:
 
         """
-        log.info(
+        self.req_logger.info(
             "Stream CSV: Start",
             extra={
                 'report_url': request_url
@@ -959,7 +966,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
             request_label="Stream CSV"
         )
 
-        log.info(
+        self.req_logger.info(
             "Stream CSV: Response",
             extra={
                 'response_status_code': response.status_code,
@@ -977,7 +984,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
         response_transfer_encoding = response.headers.get('Transfer-Encoding', None)
         response_http_status_code = response.status_code
 
-        log.debug(
+        self.req_logger.debug(
             "Stream CSV: Status: Details",
             extra={
                 'response_content_type': response_content_type,
@@ -1028,7 +1035,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
                     continue
 
                 if csv_keys_list_len != csv_values_list_len:
-                    log.error(
+                    self.req_logger.error(
                         "Mismatch: CSV Key",
                         extra={
                             'line': line_count,
@@ -1075,7 +1082,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
         Returns:
 
         """
-        log.debug(
+        self.req_logger.debug(
             "Download CSV Transform JSON: Start"
         )
 
@@ -1089,7 +1096,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
             )
 
         if os.path.exists(tmp_json_file_path):
-            log.debug(
+            self.req_logger.debug(
                 "Removing previous JSON File",
                 extra={
                     'file_path': tmp_json_file_path
@@ -1139,7 +1146,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
                             continue
 
                         if csv_keys_list_len != csv_values_list_len:
-                            log.error(
+                            self.req_logger.error(
                                 "Mismatch: CSV Key",
                                 extra={
                                     'line': line_count,
@@ -1176,7 +1183,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
                     dw_file_w.flush()
 
         except requests.exceptions.StreamConsumedError as request_ex:
-            log.error(
+            self.req_logger.error(
                 "Download CSV Transform JSON: Stream Previously Consumed Exception",
                 extra={
                     'error_exception': base_class_name(request_ex),
@@ -1186,7 +1193,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
             raise
 
         except requests.exceptions.RequestException as request_ex:
-            log.error(
+            self.req_logger.error(
                 "Download CSV Transform JSON: Request Exception",
                 extra={
                     'error_exception': base_class_name(request_ex),
@@ -1196,7 +1203,7 @@ class TuneRequestMvDownload(TuneRequestMvIntegration):
             raise
 
         except Exception as ex:
-            log.error(
+            self.req_logger.error(
                 "Download CSV Transform JSON: Unexpected Exception",
                 extra={
                     'error_exception': base_class_name(ex),

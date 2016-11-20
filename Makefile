@@ -63,16 +63,6 @@ dist: clean
 	$(PYTHON3) $(SETUP_FILE) sdist --format=zip,gztar
 	ls -al ./dist/$(REQUESTS_MV_INTGS_PKG_PREFIX_PATTERN)
 
-# DIST UPDATE INTENTIONALLY REMOVED
-
-# Build and install the module. Apparently this target isn't really used
-# anymore. It's a candidate for removal, or at least redefinition, since
-# "build" is a useful target, generally speaking.
-build: $(ALL_FILES) pip requirements
-	$(PYTHON3) $(SETUP_FILE) clean
-	$(PYTHON3) $(SETUP_FILE) build
-	$(PYTHON3) $(SETUP_FILE) install
-
 uninstall:
 	@echo "======================================================"
 	@echo uninstall $(REQUESTS_MV_INTGS_PKG)
@@ -129,7 +119,6 @@ build:
 	$(PYTHON3) $(SETUP_FILE) build
 	$(PYTHON3) $(SETUP_FILE) install
 
-
 # Register the module with PyPi.
 register:
 	$(PYTHON3) $(SETUP_FILE) register
@@ -137,12 +126,6 @@ register:
 flake8:
 	flake8 --ignore=F401,E265,E129 tune
 	flake8 --ignore=E123,E126,E128,E265,E501 tests
-
-analysis: install
-	. venv/bin/activate; flake8 --ignore=E123,E126,E128,E265,E501 examples
-	. venv/bin/activate; flake8 --ignore=E123,E126,E128,E265,E501 tests
-	. venv/bin/activate; flake8 --ignore=F401,E265,E129 pycountry-convert
-	. venv/bin/activate; pylint --rcfile tools/pylintrc pycountry-convert | more
 
 lint: clean
 	pylint --rcfile .pylintrc pycountry-convert | more

@@ -14,15 +14,19 @@ __license__ = 'Apache 2.0'
 __python_required_version__ = (3, 0)
 
 
-from .tune_request import (
+from requests_mv_integrations.support.tune_request import (
     TuneRequest
 )
-from .tune_request_mv_integration import (
-    TuneRequestMvIntegration,
+
+from .request_mv_integration_base import (
+    RequestMvIntegrationBase
 )
-from .tune_request_mv_download import (
-    TuneRequestMvDownload
+from .request_mv_integration import (
+    RequestMvIntegration,
 )
-from .tune_request_mv_upload import (
-    TuneRequestMvUpload
+from .request_mv_integration_download import (
+    RequestMvIntegrationDownload
+)
+from .request_mv_integration_upload import (
+    RequestMvIntegrationUpload
 )

@@ -6,39 +6,26 @@
 TUNE Multiverse Request
 =======================
 """
-
-import logging
-from logging import getLogger
-
+import sys
 import base64
 import copy
 import datetime as dt
 import json
+import logging
 import os
 import time
 import urllib.parse
 from functools import partial
+
 import bs4
 import requests
 import requests_toolbelt
 import xmltodict
-
+from logging_mv_integrations import (
+    TuneLoggingHandler,
+    TuneLoggingFormat
+)
 from pprintpp import pprint
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-
-from requests_mv_integrations.errors.exceptions import (
-    TuneRequestError,
-    TuneRequestClientError,
-    TuneRequestServiceError,
-    TuneRequestModuleError
-)
-from requests_mv_integrations.errors.errors_traceback import (
-    get_exception_message,
-    print_traceback
-)
-from requests_mv_integrations.errors.exit_code import (
-    IntegrationExitCode
-)
 from pyhttpstatus_utils import (
     HttpStatusCode,
     HttpStatusType,
@@ -46,6 +33,22 @@ from pyhttpstatus_utils import (
     http_status_code_to_type,
     is_http_status_type,
     is_http_status_successful
+)
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+
+from requests_mv_integrations import (
+    __python_required_version__,
+    __version__
+)
+from requests_mv_integrations.errors import (
+    TuneRequestError,
+    TuneRequestClientError,
+    TuneRequestServiceError,
+    TuneRequestModuleError,
+    get_exception_message,
+    print_traceback,
+
+    IntegrationExitCode
 )
 from requests_mv_integrations.support import (
     command_line_request_curl,
@@ -62,35 +65,32 @@ from requests_mv_integrations.support import (
 
     __USER_AGENT__
 )
-from requests_mv_integrations import (
-    __python_required_version__
-)
-
-from .tune_request import (
+from requests_mv_integrations.support.tune_request import (
     TuneRequest
 )
-
-log = getLogger(__name__)
+from .request_mv_integration_base import (
+    RequestMvIntegrationBase
+)
 
 python_check_version(__python_required_version__)
 
 
 # @brief Request with retry class for TUNE Multiverse classes
 #
-# @namespace requests_mv_integrations.TuneRequestMvIntegration
-class TuneRequestMvIntegration(object):
+# @namespace requests_mv_integrations.RequestMvIntegration
+class RequestMvIntegration(RequestMvIntegrationBase):
     """Request with retry class for TUNE Multiverse classes
     """
 
     _REQUEST_CONFIG = {
         "timeout": 60,  # timeout: the number of seconds to connect to
-        # and then read from a remote machine.
+                        # and then read from a remote machine.
 
         "tries": 3,  # tries: the maximum number of attempts.
-        # (-1 is infinite). default: 10 tries.
+                     # (-1 is infinite). default: 10 tries.
 
         "delay": 10  # delay: initial delay between attempts.
-        # default: 10 seconds.
+                     # default: 10 seconds.
     }
 
     # Current directory
@@ -118,9 +118,53 @@ class TuneRequestMvIntegration(object):
         self.__built_request_curl = value
 
     def __init__(
+        self,
+        req_logger=None,
+        logger_name=None,
+        logger_level=logging.NOTSET,
+        logger_format=TuneLoggingFormat.JSON
+    ):
+        # if logger_level == logging.NOTSET:
+        #     if self.req_logger:
+        #         logger_level = self.req_logger.logger_level
+        #     else:
+        #         logger_level = logging.INFO
+        #
+        # if req_logger:
+        #     assert type(req_logger).__name__ == 'TuneLogging'
+
+        super(RequestMvIntegration, self).__init__(
+            req_logger=req_logger,
+
+            logger_name=logger_name,
+            logger_level=logger_level,
+            logger_format=logger_format
+        )
+
+        self._requests_logger()
+
+    def _requests_logger(
         self
     ):
-        pass
+        if self.req_logger:
+            request_logger_level = self.req_logger.logger_level
+
+            if request_logger_level == logging.INFO:
+                request_logger_level = logging.WARNING
+
+            tune_loggin_handler = TuneLoggingHandler(
+                logger_format=self.req_logger.logger_format
+            )
+
+            tune_loggin_handler.add_logger_version(
+                'requests',
+                requests.__version__
+            )
+
+            requests_logger = logging.getLogger('requests')
+            requests_logger.addHandler(tune_loggin_handler.log_handler)
+            requests_logger.propagate = True
+            requests_logger.setLevel(level=request_logger_level)
 
     def request(
         self,
@@ -189,7 +233,7 @@ class TuneRequestMvIntegration(object):
             * jitter: extra seconds added to delay between attempts.
                 default: 0.
         """
-        log.debug(
+        self.req_logger.debug(
             "Request: Start: {}".format(
                 request_label
             )
@@ -262,7 +306,7 @@ class TuneRequestMvIntegration(object):
                 'request_json': request_json
             })
 
-        log.debug(
+        self.req_logger.debug(
             "Request: Setup: {}".format(
                 request_label
             ),
@@ -311,7 +355,7 @@ class TuneRequestMvIntegration(object):
             request_retry_excps = REQUEST_RETRY_EXCPS
         self.request_retry_excps = request_retry_excps
 
-        log.debug(
+        self.req_logger.debug(
             "Request: Details: {}".format(
                 request_label
             ),
@@ -335,8 +379,6 @@ class TuneRequestMvIntegration(object):
         )
 
         try:
-            request = TuneRequest()
-
             response = self._request_retry(
                 call_func=self._request,
                 fargs=None,
@@ -446,7 +488,7 @@ class TuneRequestMvIntegration(object):
 
         request_time_msecs = int(diff_req.total_seconds() * 1000)
 
-        log.debug(
+        self.req_logger.debug(
             "Request: Completed",
             extra={
                 'request_label': request_label,
@@ -497,7 +539,7 @@ class TuneRequestMvIntegration(object):
         Returns:
 
         """
-        log.debug(
+        self.req_logger.debug(
             "Request Retry: Start: {}".format(
                 request_label
             )
@@ -539,7 +581,7 @@ class TuneRequestMvIntegration(object):
                 'request_retry_excps_func': request_retry_excps_func_name
             })
 
-        log.debug(
+        self.req_logger.debug(
             msg="{}: Begin".format(logger_label),
             extra=request_retry_extra
         )
@@ -561,7 +603,7 @@ class TuneRequestMvIntegration(object):
             fkwargs['timeout'] = _timeout
             request_func = partial(call_func, *args, **kwargs)
 
-            log.debug(
+            self.req_logger.debug(
                 msg="{}: Attempt: {}".format(logger_label, _attempts),
                 extra={
                     'attempts': _attempts,
@@ -573,7 +615,6 @@ class TuneRequestMvIntegration(object):
             )
 
             error_exception = None
-            error_details = None
             _tries -= 1
 
             try:
@@ -587,7 +628,7 @@ class TuneRequestMvIntegration(object):
                         exit_code=IntegrationExitCode.MOD_ERR_UNEXPECTED_VALUE
                     )
 
-                log.debug(
+                self.req_logger.debug(
                     "Request Retry: Checking Response",
                     extra={
                         'request_url': request_url,
@@ -597,7 +638,7 @@ class TuneRequestMvIntegration(object):
 
                 if request_retry_func:
                     if not request_retry_func(response):
-                        log.debug(
+                        self.req_logger.debug(
                             "Request Retry: Response: Valid: Not Retry Candidate",
                             extra={
                                 'request_url': request_url,
@@ -606,7 +647,7 @@ class TuneRequestMvIntegration(object):
                         )
                         return response
                 else:
-                    log.debug(
+                    self.req_logger.debug(
                         "Request Retry: Response: Valid",
                         extra={
                             'request_url': request_url,
@@ -615,7 +656,7 @@ class TuneRequestMvIntegration(object):
                     )
                     return response
 
-                log.debug(
+                self.req_logger.debug(
                     "Request Retry: Response: Valid: Retry Candidate",
                     extra={
                         'request_url': request_url,
@@ -626,7 +667,7 @@ class TuneRequestMvIntegration(object):
             except self.request_retry_excps as retry_ex:
                 error_exception = retry_ex
 
-                log.warning(
+                self.req_logger.warning(
                     "Request Retry: Expected: {}: Retry Candidate".format(
                         base_class_name(error_exception)
                     ),
@@ -638,7 +679,7 @@ class TuneRequestMvIntegration(object):
                 )
 
                 if not _tries:
-                    log.error(
+                    self.req_logger.error(
                         "Request Retry: Expected: {}: Exhausted Retries".format(
                             base_class_name(error_exception)
                         )
@@ -656,7 +697,7 @@ class TuneRequestMvIntegration(object):
 
                 if not request_retry_excps_func or \
                         not request_retry_excps_func(tmv_ex, request_label):
-                    log.error(
+                    self.req_logger.error(
                         "Request Retry: Integration: {}: Not Retry Candidate".format(
                             base_class_name(error_exception)
                         ),
@@ -664,7 +705,7 @@ class TuneRequestMvIntegration(object):
                     )
                     raise
 
-                log.warning(
+                self.req_logger.warning(
                     "Request Retry: Integration: {}: Retry Candidate".format(
                         base_class_name(error_exception)
                     ),
@@ -672,7 +713,7 @@ class TuneRequestMvIntegration(object):
                 )
 
                 if not _tries:
-                    log.error(
+                    self.req_logger.error(
                         "Request Retry: Integration: {}: Exhausted Retries".format(
                             base_class_name(error_exception)
                         )
@@ -690,7 +731,7 @@ class TuneRequestMvIntegration(object):
 
                 if not request_retry_excps_func or \
                         not request_retry_excps_func(error_exception, request_label):
-                    log.error(
+                    self.req_logger.error(
                         "Request Retry: Unexpected: {}: Not Retry Candidate".format(
                             base_class_name(error_exception)
                         ),
@@ -698,7 +739,7 @@ class TuneRequestMvIntegration(object):
                     )
                     raise
 
-                log.warning(
+                self.req_logger.warning(
                     "Request Retry: Unexpected: {}: Retry Candidate".format(
                         base_class_name(error_exception)
                     ),
@@ -716,7 +757,7 @@ class TuneRequestMvIntegration(object):
                     )
 
             if not _tries:
-                log.error(
+                self.req_logger.error(
                     "Request Retry: Exhausted Retries",
                     extra={
                         'attempts': _attempts,
@@ -737,7 +778,7 @@ class TuneRequestMvIntegration(object):
                     exit_code=IntegrationExitCode.MOD_ERR_RETRY_EXHAUSTED
                 )
 
-            log.info(
+            self.req_logger.info(
                 "Request Retry: Performing Retry",
                 extra={
                     'tries': _tries,
@@ -758,7 +799,6 @@ class TuneRequestMvIntegration(object):
 
             if retry_max_delay is not None:
                 _delay = min(_delay, retry_max_delay)
-
 
     # Request Data
     #
@@ -818,7 +858,7 @@ class TuneRequestMvIntegration(object):
 
         self.session = tune_request.session
 
-        log.debug(
+        self.req_logger.debug(
             "Request Op: Details: {}".format(
                 request_label
             ),
@@ -853,17 +893,17 @@ class TuneRequestMvIntegration(object):
         self.built_request_curl = None
 
         if request_session:
-            log.debug(
+            self.req_logger.debug(
                 "Request Op: Session: Requested"
             )
 
             if self.session is None:
-                log.debug(
+                self.req_logger.debug(
                     "Request Op: Session: New"
                 )
                 self.session = requests.Session()
 
-            log.debug(
+            self.req_logger.debug(
                 "Request Op: Session: Existing",
                 extra={
                     'cookie_payload': self.session.cookies.get_dict(),
@@ -898,14 +938,14 @@ class TuneRequestMvIntegration(object):
         }
 
         if verbose:
-            log.info(
+            self.req_logger.info(
                 "Request Op: Details: {}".format(
                     request_label
                 ),
                 extra=request_extra
             )
         else:
-            log.debug(
+            self.req_logger.debug(
                 "Request Op: Details: {}".format(
                     request_label
                 ),
@@ -940,7 +980,6 @@ class TuneRequestMvIntegration(object):
                 'stream': stream
             })
 
-
         if cookie_payload:
             kwargs.update({
                 'cookies': cookie_payload
@@ -967,7 +1006,7 @@ class TuneRequestMvIntegration(object):
                         request_allow_redirects=allow_redirects
                     )
 
-                    log.debug(
+                    self.req_logger.debug(
                         "Request Op: Request Base: GET",
                         extra={
                             'request_label': request_label,
@@ -981,9 +1020,12 @@ class TuneRequestMvIntegration(object):
                         'params': request_params_encoded
                     })
 
+                kwargs.update({
+                    'request_method': 'GET',
+                    'request_url': request_url
+                })
+
                 response = tune_request.request(
-                    request_method="GET",
-                    request_url=request_url,
                     **kwargs
                 )
 
@@ -1002,7 +1044,7 @@ class TuneRequestMvIntegration(object):
                         request_allow_redirects=allow_redirects
                     )
 
-                    log.debug(
+                    self.req_logger.debug(
                         "Request Op: Request Base: POST",
                         extra={
                             'request_label': request_label,
@@ -1020,9 +1062,12 @@ class TuneRequestMvIntegration(object):
                         'json': request_json
                     })
 
+                kwargs.update({
+                    'request_method': 'POST',
+                    'request_url': request_url
+                })
+
                 response = tune_request.request(
-                    request_method="POST",
-                    request_url=request_url,
                     **kwargs
                 )
 
@@ -1040,7 +1085,7 @@ class TuneRequestMvIntegration(object):
                         request_allow_redirects=allow_redirects
                     )
 
-                    log.debug(
+                    self.req_logger.debug(
                         "Request Op: Request Base: PUT",
                         extra={
                             'request_label': request_label,
@@ -1053,9 +1098,12 @@ class TuneRequestMvIntegration(object):
                         'data': request_data
                     })
 
+                kwargs.update({
+                    'request_method': 'PUT',
+                    'request_url': request_url
+                })
+
                 response = tune_request.request(
-                    request_method="PUT",
-                    request_url=request_url,
                     **kwargs
                 )
 
@@ -1069,11 +1117,15 @@ class TuneRequestMvIntegration(object):
                         'headers': headers
                     })
 
+                kwargs.update({
+                    'request_method': 'HEAD',
+                    'request_url': request_url
+                })
+
                 response = tune_request.request(
-                    request_method="HEAD",
-                    request_url=request_url,
                     **kwargs
                 )
+
             else:
                 raise TuneRequestError(
                     error_message="Request: Unexpected 'request_method':'{}'".format(
@@ -1083,7 +1135,7 @@ class TuneRequestMvIntegration(object):
                 )
 
         except Exception as ex:
-            log.error(
+            self.req_logger.error(
                 "Request Op: Request Base: Error",
                 extra={
                     'request_label': request_label,
@@ -1092,6 +1144,8 @@ class TuneRequestMvIntegration(object):
                 }
             )
             raise
+
+        assert response
 
         http_status_code = response.status_code
         response_headers = json.loads(json.dumps(dict(response.headers)))
@@ -1111,12 +1165,12 @@ class TuneRequestMvIntegration(object):
         }
 
         if verbose:
-            log.info(
+            self.req_logger.info(
                 "Request Op: Response: Details",
                 extra=response_extra
             )
         else:
-            log.debug(
+            self.req_logger.debug(
                 "Request Op: Response: Details",
                 extra=response_extra
             )
@@ -1140,18 +1194,18 @@ class TuneRequestMvIntegration(object):
                 })
 
             if verbose:
-                log.info(
+                self.req_logger.info(
                     "Request Op: Response: Success",
                     extra=response_extra
                 )
             else:
-                log.debug(
+                self.req_logger.debug(
                     "Request Op: Response: Success",
                     extra=response_extra
                 )
 
             if request_session:
-                log.debug(
+                self.req_logger.debug(
                     "Request Op: Session: Payload",
                     extra={
                         'cookie_payload': self.session.cookies.get_dict(),
@@ -1159,13 +1213,14 @@ class TuneRequestMvIntegration(object):
                     }
                 )
 
+            assert response
             return response
         else:
             response_extra.update({
                 'error_request_curl': self.built_request_curl
             })
 
-            log.error(
+            self.req_logger.error(
                 "Request Op: Response: Failed",
                 extra=response_extra
             )
@@ -1195,7 +1250,7 @@ class TuneRequestMvIntegration(object):
                     'error_request_curl': self.built_request_curl
                 })
 
-            log.error(
+            self.req_logger.error(
                 "Request Op: Error: Response: Details",
                 extra=extra_error
             )
@@ -1245,13 +1300,12 @@ class TuneRequestMvIntegration(object):
             extra_unhandled.update({
                 'http_status_code': http_status_code
             })
-            log.error(
+            self.req_logger.error(
                 "Request Op: Error: Unhandled",
                 extra=extra_unhandled
             )
 
             raise TuneRequestModuleError(**kwargs)
-
 
     def validate_response(
         self,
@@ -1275,7 +1329,7 @@ class TuneRequestMvIntegration(object):
             })
 
         if not response:
-            log.error(
+            self.req_logger.error(
                 "Validate Response: Failed: None",
                 extra=response_extra
             )
@@ -1286,7 +1340,7 @@ class TuneRequestMvIntegration(object):
                 exit_code=IntegrationExitCode.MOD_ERR_SOFTWARE
             )
         else:
-            log.debug(
+            self.req_logger.debug(
                 "Validate Response: Defined",
                 extra=response_extra
             )
@@ -1333,7 +1387,7 @@ class TuneRequestMvIntegration(object):
         if not is_http_status_successful(
             http_status_code=response.status_code
         ):
-            log.error(
+            self.req_logger.error(
                 "Validate Response: Failed",
                 extra=response_extra
             )
@@ -1344,7 +1398,7 @@ class TuneRequestMvIntegration(object):
                 exit_code=IntegrationExitCode.MOD_ERR_SOFTWARE
             )
         else:
-            log.debug(
+            self.req_logger.debug(
                 "Validate Response: Success",
                 extra=response_extra
             )
@@ -1440,7 +1494,7 @@ class TuneRequestMvIntegration(object):
             'raise_ex_if_not_json_response': raise_ex_if_not_json_response
         })
 
-        log.debug(
+        self.req_logger.debug(
             "Validate JSON Response: Details",
             extra=response_extra
         )
@@ -1479,7 +1533,7 @@ class TuneRequestMvIntegration(object):
                 'response_content_length': response_content_length
             })
         except json.decoder.JSONDecodeError as json_decode_ex:
-            log.error(
+            self.req_logger.error(
                 "Validate JSON Response: Failed: JSONDecodeError",
                 extra=response_extra
             )
@@ -1498,7 +1552,7 @@ class TuneRequestMvIntegration(object):
             )
 
         except Exception as ex:
-            log.error(
+            self.req_logger.error(
                 "Validate JSON Response: Failed: Exception",
                 extra=response_extra
             )
@@ -1515,7 +1569,7 @@ class TuneRequestMvIntegration(object):
 
         if json_response is None:
             if raise_ex_if_not_json_response:
-                log.error(
+                self.req_logger.error(
                     "Validate JSON Response: Failed: None",
                     extra=response_extra
                 )
@@ -1526,12 +1580,12 @@ class TuneRequestMvIntegration(object):
                     exit_code=IntegrationExitCode.MOD_ERR_SOFTWARE
                 )
             else:
-                log.warning(
+                self.req_logger.warning(
                     "Validate JSON Response: None",
                     extra=response_extra
                 )
         else:
-            log.debug(
+            self.req_logger.debug(
                 "Validate JSON Response: Valid",
                 extra=response_extra
             )
@@ -1753,7 +1807,7 @@ class TuneRequestMvIntegration(object):
                 'error_details': get_exception_message(response_decode_ex)
             })
 
-        log.error(
+        self.req_logger.error(
             "Validate JSON Response: Failed: Invalid",
             extra=response_extra
         )

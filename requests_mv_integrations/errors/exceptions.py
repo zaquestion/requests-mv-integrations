@@ -253,8 +253,10 @@ class TuneRequestError(Exception):
 class TuneRequestClientError(TuneRequestError):
     pass
 
+
 class TuneRequestServiceError(TuneRequestError):
     pass
+
 
 class TuneRequestModuleError(TuneRequestError):
     pass
