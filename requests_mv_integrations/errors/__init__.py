@@ -20,6 +20,7 @@ from .exit_code import (
     IntegrationExitCode
 )
 from .exceptions import (
+    TuneRequestBaseError,
     TuneRequestError,
     TuneRequestClientError,
     TuneRequestServiceError,

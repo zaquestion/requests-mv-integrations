@@ -23,8 +23,8 @@ from requests_mv_integrations.errors.exit_code import (
 
 # @brief TUNE Multiverse Error Base Class
 #
-# @namespace requests_mv_integrations.TuneRequestError
-class TuneRequestError(Exception):
+# @namespace requests_mv_integrations.TuneRequestBaseError
+class TuneRequestBaseError(Exception):
     """TUNE Mv-Integration Exception.
     """
     __error_message = None
@@ -60,7 +60,7 @@ class TuneRequestError(Exception):
         )
 
         # Call the base class constructor with the parameters it needs
-        super(TuneRequestError, self).__init__(self.error_message)
+        super(TuneRequestBaseError, self).__init__(self.error_message)
 
         self.__errors = errors or None
         self.__error_status = error_status or None
@@ -248,6 +248,10 @@ class TuneRequestError(Exception):
             })
 
         return dict_
+
+
+class TuneRequestError(TuneRequestBaseError):
+    pass
 
 
 class TuneRequestClientError(TuneRequestError):
