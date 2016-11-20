@@ -474,12 +474,12 @@ def command_line_request_curl(
 
             params = [
                 "'{0}'".format(urllib.parse.unquote(param)) for param in params
-                ]
+            ]
             params = " --data ".join(params)
 
             headers = [
                 "'{0}: {1}'".format(k, v) for k, v in request_headers.items()
-                ]
+            ]
             headers = " -H ".join(headers)
 
             return command.format(
@@ -496,7 +496,7 @@ def command_line_request_curl(
 
             headers = [
                 "'{0}: {1}'".format(k, v) for k, v in request_headers.items()
-                ]
+            ]
             headers = " -H ".join(headers)
 
             return command.format(
@@ -515,7 +515,7 @@ def command_line_request_curl(
 
             headers = [
                 "'{0}: {1}'".format(k, v) for k, v in request_headers.items()
-                ]
+            ]
             headers = " -H ".join(headers)
 
             return command.format(
@@ -533,7 +533,7 @@ def command_line_request_curl(
 
             headers = [
                 "'{0}: {1}'".format(k, v) for k, v in request_headers.items()
-                ]
+            ]
             headers = " -H ".join(headers)
 
             return command.format(
@@ -550,7 +550,7 @@ def command_line_request_curl(
 
             headers = [
                 "'{0}: {1}'".format(k, v) for k, v in request_headers.items()
-                ]
+            ]
             headers = " -H ".join(headers)
             return command.format(
                 request_method=request_method,
@@ -573,7 +573,7 @@ def command_line_request_curl(
 
             headers = [
                 "'{0}: {1}'".format(k, v) for k, v in request_headers.items()
-                ]
+            ]
             headers = " -H ".join(headers)
 
             return command.format(
@@ -590,7 +590,7 @@ def command_line_request_curl(
 
             headers = [
                 "'{0}: {1}'".format(k, v) for k, v in request_headers.items()
-                ]
+            ]
             headers = " -H ".join(headers)
             return command.format(
                 request_method=request_method,

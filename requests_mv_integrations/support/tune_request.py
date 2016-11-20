@@ -4,7 +4,7 @@
 #  @namespace requests_mv_integrations
 
 from logging import getLogger
-
+from pprintpp import pprint
 import grequests
 import requests
 from requests.adapters import (HTTPAdapter, DEFAULT_POOLSIZE)
@@ -30,7 +30,7 @@ class TuneRequest(object):
         self.session = requests.session()
 
         if retry_codes is None:
-            retry_codes=set(REQUEST_RETRY_HTTP_STATUS_CODES)
+            retry_codes = set(REQUEST_RETRY_HTTP_STATUS_CODES)
 
         self.session.mount(
             'http',
@@ -49,11 +49,13 @@ class TuneRequest(object):
         request_url,
         **kwargs
     ):
-        return self.session.request(
+        response = self.session.request(
             method=request_method,
             url=request_url,
             **kwargs
         )
+
+        return response
 
     def request_safe(
         self,
