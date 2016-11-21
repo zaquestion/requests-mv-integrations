@@ -24,5 +24,9 @@ from .exceptions import (
     TuneRequestError,
     TuneRequestClientError,
     TuneRequestServiceError,
-    TuneRequestModuleError
+    TuneRequestModuleError,
+
+    ModuleArgumentError,
+    ModuleAuthenticationError,
+    ModuleConfigError
 )

@@ -264,3 +264,26 @@ class TuneRequestServiceError(TuneRequestError):
 
 class TuneRequestModuleError(TuneRequestError):
     pass
+
+
+class ModuleConfigError(TuneRequestModuleError):
+    def __init__(self, **kwargs):
+        exit_code = kwargs.pop('exit_code', None) or IntegrationExitCode.MOD_ERR_CONFIG
+        super(ModuleConfigError, self).__init__(exit_code=exit_code, **kwargs)
+
+
+class ModuleArgumentError(TuneRequestModuleError):
+    def __init__(self, **kwargs):
+        exit_code = kwargs.pop('exit_code', None) or IntegrationExitCode.MOD_ERR_ARGUMENT
+        super(ModuleArgumentError, self).__init__(exit_code=exit_code, **kwargs)
+
+
+class ModuleAuthenticationError(TuneRequestModuleError):
+    def __init__(self, **kwargs):
+        exit_code = kwargs.pop('exit_code', None) or IntegrationExitCode.MOD_ERR_AUTH_ERROR
+        error_origin = kwargs.pop('error_origin', None) or 'Authentication'
+        super(ModuleAuthenticationError, self).__init__(
+            exit_code=exit_code,
+            error_origin=error_origin,
+            **kwargs
+        )
