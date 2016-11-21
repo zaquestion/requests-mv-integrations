@@ -6,7 +6,7 @@
 TUNE Multiverse Request
 =======================
 """
-import base64
+
 import copy
 import datetime as dt
 import json
@@ -49,7 +49,7 @@ from requests_mv_integrations.errors import (
     get_exception_message,
     print_traceback,
 
-    IntegrationExitCode
+    TuneIntegrationExitCode
 )
 from requests_mv_integrations.support import (
     command_line_request_curl,
@@ -403,14 +403,14 @@ class RequestMvIntegration(object):
                 error_message="Request: Exception: Timeout",
                 errors=ex_req_timeout,
                 error_request_curl=self.built_request_curl,
-                exit_code=IntegrationExitCode.GATEWAY_TIMEOUT
+                exit_code=TuneIntegrationExitCode.GATEWAY_TIMEOUT
             )
 
         except requests.exceptions.HTTPError as ex_req_http:
             raise TuneRequestError(
                 error_message="Request: Exception: HTTP Error",
                 errors=ex_req_http,
-                exit_code=IntegrationExitCode.MOD_ERR_REQUEST_HTTP,
+                exit_code=TuneIntegrationExitCode.MOD_ERR_REQUEST_HTTP,
                 error_request_curl=self.built_request_curl
             )
 
@@ -419,7 +419,7 @@ class RequestMvIntegration(object):
                 error_message="Request: Exception: Connection Error",
                 errors=ex_req_connect,
                 error_request_curl=self.built_request_curl,
-                exit_code=IntegrationExitCode.MOD_ERR_REQUEST_CONNECT
+                exit_code=TuneIntegrationExitCode.MOD_ERR_REQUEST_CONNECT
             )
 
         except BrokenPipeError as ex_broken_pipe:
@@ -427,7 +427,7 @@ class RequestMvIntegration(object):
                 error_message="Request: Exception: Broken Pipe Error",
                 errors=ex_broken_pipe,
                 error_request_curl=self.built_request_curl,
-                exit_code=IntegrationExitCode.MOD_ERR_REQUEST_CONNECT
+                exit_code=TuneIntegrationExitCode.MOD_ERR_REQUEST_CONNECT
             )
 
         except ConnectionError as ex_connect:
@@ -435,7 +435,7 @@ class RequestMvIntegration(object):
                 error_message="Request: Exception: Connection Error",
                 errors=ex_connect,
                 error_request_curl=self.built_request_curl,
-                exit_code=IntegrationExitCode.MOD_ERR_REQUEST_CONNECT
+                exit_code=TuneIntegrationExitCode.MOD_ERR_REQUEST_CONNECT
             )
 
         except requests.packages.urllib3.exceptions.ProtocolError as ex_req_urllib3_protocol:
@@ -443,7 +443,7 @@ class RequestMvIntegration(object):
                 error_message="Request: Exception: Protocol Error",
                 errors=ex_req_urllib3_protocol,
                 error_request_curl=self.built_request_curl,
-                exit_code=IntegrationExitCode.MOD_ERR_REQUEST_CONNECT
+                exit_code=TuneIntegrationExitCode.MOD_ERR_REQUEST_CONNECT
             )
 
         except requests.packages.urllib3.exceptions.ReadTimeoutError as ex_req_urllib3_read_timeout:
@@ -451,7 +451,7 @@ class RequestMvIntegration(object):
                 error_message="Request: Exception: Urllib3: Read Timeout Error",
                 errors=ex_req_urllib3_read_timeout,
                 error_request_curl=self.built_request_curl,
-                exit_code=IntegrationExitCode.GATEWAY_TIMEOUT
+                exit_code=TuneIntegrationExitCode.GATEWAY_TIMEOUT
             )
 
         except requests.exceptions.TooManyRedirects as ex_req_redirects:
@@ -459,7 +459,7 @@ class RequestMvIntegration(object):
                 error_message="Request: Exception: Too Many Redirects",
                 errors=ex_req_redirects,
                 error_request_curl=self.built_request_curl,
-                exit_code=IntegrationExitCode.MOD_ERR_REQUEST_REDIRECTS
+                exit_code=TuneIntegrationExitCode.MOD_ERR_REQUEST_REDIRECTS
             )
 
         except requests.exceptions.RequestException as ex_req_request:
@@ -467,7 +467,7 @@ class RequestMvIntegration(object):
                 error_message="Request: Exception: Request Error",
                 errors=ex_req_request,
                 error_request_curl=self.built_request_curl,
-                exit_code=IntegrationExitCode.MOD_ERR_REQUEST
+                exit_code=TuneIntegrationExitCode.MOD_ERR_REQUEST
             )
 
         except TuneRequestError:
@@ -480,7 +480,7 @@ class RequestMvIntegration(object):
                 error_message="Request: Exception: Unexpected",
                 errors=ex,
                 error_request_curl=self.built_request_curl,
-                exit_code=IntegrationExitCode.MOD_ERR_SOFTWARE
+                exit_code=TuneIntegrationExitCode.MOD_ERR_SOFTWARE
             )
 
         time_end_req = dt.datetime.now()
@@ -614,7 +614,7 @@ class RequestMvIntegration(object):
                         error_message=(
                             "Request Retry: No response"
                         ),
-                        exit_code=IntegrationExitCode.MOD_ERR_UNEXPECTED_VALUE
+                        exit_code=TuneIntegrationExitCode.MOD_ERR_UNEXPECTED_VALUE
                     )
 
                 self.logger.debug(
@@ -742,7 +742,7 @@ class RequestMvIntegration(object):
                         ),
                         errors=error_exception,
                         error_request_curl=self.built_request_curl,
-                        exit_code=IntegrationExitCode.MOD_ERR_RETRY_EXHAUSTED
+                        exit_code=TuneIntegrationExitCode.MOD_ERR_RETRY_EXHAUSTED
                     )
 
             if not _tries:
@@ -764,7 +764,7 @@ class RequestMvIntegration(object):
                         request_url
                     ),
                     error_request_curl=self.built_request_curl,
-                    exit_code=IntegrationExitCode.MOD_ERR_RETRY_EXHAUSTED
+                    exit_code=TuneIntegrationExitCode.MOD_ERR_RETRY_EXHAUSTED
                 )
 
             self.logger.info(
@@ -1323,7 +1323,7 @@ class RequestMvIntegration(object):
             raise TuneRequestModuleError(
                 error_message="Validate Response: Failed: None",
                 error_request_curl=self.built_request_curl,
-                exit_code=IntegrationExitCode.MOD_ERR_SOFTWARE
+                exit_code=TuneIntegrationExitCode.MOD_ERR_SOFTWARE
             )
         else:
             self.logger.debug(
@@ -1381,7 +1381,7 @@ class RequestMvIntegration(object):
             raise TuneRequestModuleError(
                 error_message="Validate Request: Failed",
                 error_request_curl=self.built_request_curl,
-                exit_code=IntegrationExitCode.MOD_ERR_SOFTWARE
+                exit_code=TuneIntegrationExitCode.MOD_ERR_SOFTWARE
             )
         else:
             self.logger.debug(
@@ -1447,7 +1447,7 @@ class RequestMvIntegration(object):
                         error_message=request_label,
                         errors=ex,
                         error_request_curl=self.built_request_curl,
-                        exit_code=IntegrationExitCode.MOD_ERR_UNEXPECTED_CONTENT_TYPE_RETURNED
+                        exit_code=TuneIntegrationExitCode.MOD_ERR_UNEXPECTED_CONTENT_TYPE_RETURNED
                     )
 
                 raise TuneRequestModuleError(
@@ -1457,7 +1457,7 @@ class RequestMvIntegration(object):
                     ),
                     errors=response_content_html_lines,
                     error_request_curl=self.built_request_curl,
-                    exit_code=IntegrationExitCode.MOD_ERR_UNEXPECTED_CONTENT_TYPE_RETURNED
+                    exit_code=TuneIntegrationExitCode.MOD_ERR_UNEXPECTED_CONTENT_TYPE_RETURNED
                 )
             else:
                 raise TuneRequestModuleError(
@@ -1466,13 +1466,13 @@ class RequestMvIntegration(object):
                         response_content_type_expected
                     ),
                     error_request_curl=self.built_request_curl,
-                    exit_code=IntegrationExitCode.MOD_ERR_UNEXPECTED_CONTENT_TYPE_RETURNED
+                    exit_code=TuneIntegrationExitCode.MOD_ERR_UNEXPECTED_CONTENT_TYPE_RETURNED
                 )
         else:
             raise TuneRequestModuleError(
                 error_message="Undefined 'Content-Type'",
                 error_request_curl=self.built_request_curl,
-                exit_code=IntegrationExitCode.MOD_ERR_UNEXPECTED_CONTENT_TYPE_RETURNED
+                exit_code=TuneIntegrationExitCode.MOD_ERR_UNEXPECTED_CONTENT_TYPE_RETURNED
             )
 
         response_extra.update({
@@ -1563,7 +1563,7 @@ class RequestMvIntegration(object):
                 raise TuneRequestModuleError(
                     error_message="Validate JSON Response: Failed: None",
                     error_request_curl=self.built_request_curl,
-                    exit_code=IntegrationExitCode.MOD_ERR_SOFTWARE
+                    exit_code=TuneIntegrationExitCode.MOD_ERR_SOFTWARE
                 )
             else:
                 self.logger.warning(
@@ -1577,47 +1577,6 @@ class RequestMvIntegration(object):
             )
 
         return json_response
-
-    def create_header_authorization_basic(
-        self,
-        auth_user,
-        auth_secret
-    ):
-        """Create Authorization Basic header
-
-        Args:
-            auth_user:
-            auth_secret:
-
-        Returns:
-
-        """
-        if not auth_user:
-            raise ValueError(
-                "Missing 'auth_user'"
-            )
-        if not auth_secret:
-            raise ValueError(
-                "Missing 'auth_secret'"
-            )
-        str_basic_auth = \
-            bytes(
-                "%s:%s" % (
-                    auth_user,
-                    auth_secret
-                ),
-                'utf-8'
-            )
-        b64bytes_auth = \
-            base64.b64encode(str_basic_auth)
-        b64_auth = \
-            b64bytes_auth.decode('utf-8')
-
-        header_authorization_basic = {
-            'Authorization': 'Basic ' + b64_auth
-        }
-
-        return header_authorization_basic
 
     @staticmethod
     def build_response_error_details(
@@ -1800,5 +1759,5 @@ class RequestMvIntegration(object):
             error_message="Validate JSON Response: Failed: Invalid",
             errors=response_decode_ex,
             error_request_curl=request_curl,
-            exit_code=IntegrationExitCode.MOD_ERR_SOFTWARE
+            exit_code=TuneIntegrationExitCode.MOD_ERR_SOFTWARE
         )

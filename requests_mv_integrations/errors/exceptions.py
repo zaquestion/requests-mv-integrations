@@ -17,19 +17,19 @@ from requests_mv_integrations.errors import (
     exit_name
 )
 from requests_mv_integrations.errors.exit_code import (
-    IntegrationExitCode
+    TuneIntegrationExitCode
 )
 
 
 # @brief TUNE Multiverse Error Base Class
 #
-# @namespace requests_mv_integrations.TuneRequestBaseError
-class TuneRequestBaseError(Exception):
+# @namespace requests_mv_integrations.TuneIntegrationBaseError
+class TuneIntegrationBaseError(Exception):
     """TUNE Mv-Integration Exception.
     """
     __error_message = None
     __errors = None
-    __exit_code = IntegrationExitCode.MOD_ERR_UNEXPECTED
+    __exit_code = TuneIntegrationExitCode.MOD_ERR_UNEXPECTED
 
     __error_status = None
     __error_reason = None
@@ -60,7 +60,7 @@ class TuneRequestBaseError(Exception):
         )
 
         # Call the base class constructor with the parameters it needs
-        super(TuneRequestBaseError, self).__init__(self.error_message)
+        super(TuneIntegrationBaseError, self).__init__(self.error_message)
 
         self.__errors = errors or None
         self.__error_status = error_status or None
@@ -250,7 +250,7 @@ class TuneRequestBaseError(Exception):
         return dict_
 
 
-class TuneRequestError(TuneRequestBaseError):
+class TuneRequestError(TuneIntegrationBaseError):
     pass
 
 
@@ -266,21 +266,9 @@ class TuneRequestModuleError(TuneRequestError):
     pass
 
 
-class ModuleConfigError(TuneRequestModuleError):
+class ModuleAuthenticationError(TuneIntegrationBaseError):
     def __init__(self, **kwargs):
-        exit_code = kwargs.pop('exit_code', None) or IntegrationExitCode.MOD_ERR_CONFIG
-        super(ModuleConfigError, self).__init__(exit_code=exit_code, **kwargs)
-
-
-class ModuleArgumentError(TuneRequestModuleError):
-    def __init__(self, **kwargs):
-        exit_code = kwargs.pop('exit_code', None) or IntegrationExitCode.MOD_ERR_ARGUMENT
-        super(ModuleArgumentError, self).__init__(exit_code=exit_code, **kwargs)
-
-
-class ModuleAuthenticationError(TuneRequestModuleError):
-    def __init__(self, **kwargs):
-        exit_code = kwargs.pop('exit_code', None) or IntegrationExitCode.MOD_ERR_AUTH_ERROR
+        exit_code = kwargs.pop('exit_code', None) or TuneIntegrationExitCode.MOD_ERR_AUTH_ERROR
         error_origin = kwargs.pop('error_origin', None) or 'Authentication'
         super(ModuleAuthenticationError, self).__init__(
             exit_code=exit_code,

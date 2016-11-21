@@ -17,16 +17,14 @@ from .errors_traceback import (
     print_traceback_stack
 )
 from .exit_code import (
-    IntegrationExitCode
+    TuneIntegrationExitCode
 )
 from .exceptions import (
-    TuneRequestBaseError,
+    TuneIntegrationBaseError,
     TuneRequestError,
     TuneRequestClientError,
     TuneRequestServiceError,
     TuneRequestModuleError,
 
-    ModuleArgumentError,
-    ModuleAuthenticationError,
-    ModuleConfigError
+    ModuleAuthenticationError
 )
