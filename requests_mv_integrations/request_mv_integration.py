@@ -45,6 +45,7 @@ from requests_mv_integrations.errors import (
     TuneRequestClientError,
     TuneRequestServiceError,
     TuneRequestModuleError,
+
     get_exception_message,
     print_traceback,
 
@@ -1113,11 +1114,10 @@ class RequestMvIntegration(object):
                 )
 
             else:
-                raise TuneRequestError(
-                    error_message="Request: Unexpected 'request_method':'{}'".format(
+                raise ValueError(
+                    "Request: Unexpected 'request_method':'{}'".format(
                         request_method
-                    ),
-                    exit_code=IntegrationExitCode.MOD_ERR_ARGUMENT
+                    )
                 )
 
         except Exception as ex:
@@ -1593,14 +1593,12 @@ class RequestMvIntegration(object):
 
         """
         if not auth_user:
-            raise TuneRequestModuleError(
-                error_message="Missing 'auth_user'",
-                exit_code=IntegrationExitCode.MOD_ERR_ARGUMENT
+            raise ValueError(
+                "Missing 'auth_user'"
             )
         if not auth_secret:
-            raise TuneRequestModuleError(
-                error_message="Missing 'auth_secret'",
-                exit_code=IntegrationExitCode.MOD_ERR_ARGUMENT
+            raise ValueError(
+                "Missing 'auth_secret'"
             )
         str_basic_auth = \
             bytes(
