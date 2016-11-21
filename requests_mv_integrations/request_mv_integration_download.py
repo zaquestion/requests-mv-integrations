@@ -27,7 +27,7 @@ from requests_mv_integrations import (
 from requests_mv_integrations.errors import (
     TuneRequestModuleError,
     get_exception_message,
-    IntegrationExitCode
+    TuneIntegrationExitCode
 )
 from requests_mv_integrations.support import (
     convert_size,
@@ -186,7 +186,7 @@ class RequestMvIntegrationDownload(RequestMvIntegration):
 
                 raise TuneRequestModuleError(
                     error_message="Request CSV Download: No response",
-                    exit_code=IntegrationExitCode.MOD_ERR_REQUEST
+                    exit_code=TuneIntegrationExitCode.MOD_ERR_REQUEST
                 )
 
             http_status_code = response.status_code
@@ -242,7 +242,7 @@ class RequestMvIntegrationDownload(RequestMvIntegration):
                     error_message=(
                         "Request CSV Download: Exhausted Retries"
                     ),
-                    exit_code=IntegrationExitCode.MOD_ERR_RETRY_EXHAUSTED
+                    exit_code=TuneIntegrationExitCode.MOD_ERR_RETRY_EXHAUSTED
                 )
 
             self.logger.info(
@@ -432,7 +432,7 @@ class RequestMvIntegrationDownload(RequestMvIntegration):
 
                 raise TuneRequestModuleError(
                     error_message="Request JSON Download: No response",
-                    exit_code=IntegrationExitCode.MOD_ERR_REQUEST
+                    exit_code=TuneIntegrationExitCode.MOD_ERR_REQUEST
                 )
 
             http_status_code = response.status_code
@@ -620,7 +620,7 @@ class RequestMvIntegrationDownload(RequestMvIntegration):
                             request_url
                         ),
                         error_request_curl=self.built_request_curl,
-                        exit_code=IntegrationExitCode.MOD_ERR_RETRY_EXHAUSTED
+                        exit_code=TuneIntegrationExitCode.MOD_ERR_RETRY_EXHAUSTED
                     )
 
                 self.logger.info(
@@ -1052,7 +1052,7 @@ class RequestMvIntegrationDownload(RequestMvIntegration):
                             csv_keys_str,
                             csv_values_str
                         ),
-                        exit_code=IntegrationExitCode.MOD_ERR_UNEXPECTED_VALUE
+                        exit_code=TuneIntegrationExitCode.MOD_ERR_UNEXPECTED_VALUE
                     )
 
                 json_data_row = {}
@@ -1163,7 +1163,7 @@ class RequestMvIntegrationDownload(RequestMvIntegration):
                                     csv_keys_str,
                                     csv_values_str
                                 ),
-                                exit_code=IntegrationExitCode.MOD_ERR_UNEXPECTED_VALUE
+                                exit_code=TuneIntegrationExitCode.MOD_ERR_UNEXPECTED_VALUE
                             )
 
                         json_dict = {}

@@ -9,7 +9,7 @@ TUNE Mv-Integration Exit Codes
 from pyhttpstatus_utils.status_code import HttpStatusCode
 
 
-class IntegrationExitCode(HttpStatusCode):
+class TuneIntegrationExitCode(HttpStatusCode):
     """TUNE Mv-Integration Exit Codes
     """
     MOD_ERR_UNASSIGNED = -1

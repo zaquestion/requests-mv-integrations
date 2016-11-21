@@ -18,7 +18,7 @@ from requests_mv_integrations.errors.errors_traceback import (
     print_traceback
 )
 from requests_mv_integrations.errors.exit_code import (
-    IntegrationExitCode
+    TuneIntegrationExitCode
 )
 from requests_mv_integrations.support import (
     base_class_name,
@@ -155,7 +155,7 @@ class RequestMvIntegrationUpload(RequestMvIntegration):
                     get_exception_message(ex)
                 ),
                 errors=ex,
-                exit_code=IntegrationExitCode.MOD_ERR_UPLOAD_DATA
+                exit_code=TuneIntegrationExitCode.MOD_ERR_UPLOAD_DATA
             )
 
         return response
@@ -248,7 +248,7 @@ class RequestMvIntegrationUpload(RequestMvIntegration):
                     get_exception_message(ex)
                 ),
                 errors=ex,
-                exit_code=IntegrationExitCode.MOD_ERR_UPLOAD_DATA
+                exit_code=TuneIntegrationExitCode.MOD_ERR_UPLOAD_DATA
             )
 
         return response
@@ -289,7 +289,7 @@ class RequestMvIntegrationUpload(RequestMvIntegration):
             )
 
         if isinstance(excp, TuneRequestError) and \
-                excp.exit_code == IntegrationExitCode.MOD_ERR_REQUEST_CONNECT:
+                excp.exit_code == TuneIntegrationExitCode.MOD_ERR_REQUEST_CONNECT:
             if error_details.find('RemoteDisconnected') >= 0 or \
                     error_details.find('ConnectionResetError') >= 0:
                 self.logger.debug(
