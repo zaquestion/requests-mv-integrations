@@ -41,5 +41,3 @@ bash/*
 # Documentation
 docs/doxygen/*
 docs/sphinx/_build/*
-
-dist/
