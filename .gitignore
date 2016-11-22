@@ -5,18 +5,19 @@
 .project
 .settings/
 .pydevproject
+.python-version
 .idea
 .dartignore
 
-dist/
-
+.sw*
+*.vim
 
 # Code build files
 *.egg-info/
 build/
 __pycache__/
-pycountries/__pycache__/
-pycountries/helpers/__pycache__/
+requests_mv_integrations/__pycache__/
+requests_mv_integrations/helpers/__pycache__/
 *.pyc
 
 # Code documentation
@@ -37,6 +38,7 @@ examples/processed.*
 # Sandbox
 **/_tmp/*
 **/tmp/*
+sandbox/
 
 # Scripts
 bash/*
@@ -44,3 +46,9 @@ bash/*
 # Documentation
 docs/doxygen/*
 docs/sphinx/_build/*
+
+# Analysis
+sonar-project.properties
+.sonar
+
+dist/*
