@@ -13,6 +13,7 @@ from requests_mv_integrations.support.safe_cast import (
     safe_int
 )
 
+
 def is_valid_url_exists(url):
     try:
         http_connect = httplib2.Http()
@@ -28,6 +29,7 @@ def is_valid_url_exists(url):
         return http_status_code < 400
     except:
         return False
+
 
 def is_valid_url_path(url):
     try:

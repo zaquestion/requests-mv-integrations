@@ -3,8 +3,6 @@
 #  @copyright 2016 TUNE, Inc. (http://www.tune.com)
 #  @namespace requests_mv_integrations
 
-
-import hashlib
 import copy
 import re
 import json
@@ -13,6 +11,7 @@ from .constants import (
     HEADER_CONTENT_TYPE_APP_JSON,
     __USER_AGENT__
 )
+
 
 def command_line_request_curl(
     request_method,
@@ -272,4 +271,3 @@ def command_line_request_curl_post(
         request_timeout=request_timeout,
         request_allow_redirects=request_allow_redirects
     )
-

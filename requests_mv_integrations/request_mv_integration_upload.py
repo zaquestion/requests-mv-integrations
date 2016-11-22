@@ -119,8 +119,7 @@ class RequestMvIntegrationUpload(RequestMvIntegration):
                     request_retry_excps_func=self._upload_request_retry_excps_func,
                     allow_redirects=False,
                     build_request_curl=False,
-                    request_label="{}: Request Upload".format(request_label),
-                    verbose=False
+                    request_label="{}: Request Upload".format(request_label)
                 )
         except TuneRequestError as tmv_ex:
 
@@ -161,12 +160,11 @@ class RequestMvIntegrationUpload(RequestMvIntegration):
         return response
 
     def request_upload_data(
-            self,
-            upload_request_url,
-            upload_data,
-            upload_data_size,
-            upload_timeout=None,
-            verbose=False
+        self,
+        upload_request_url,
+        upload_data,
+        upload_data_size,
+        upload_timeout=None
     ):
         """Upload Data to requested URL.
 
@@ -216,8 +214,7 @@ class RequestMvIntegrationUpload(RequestMvIntegration):
                 request_headers=request_headers,
                 allow_redirects=False,
                 build_request_curl=False,
-                request_label="Upload Data to URL",
-                verbose=verbose
+                request_label="Upload Data to URL"
             )
         except TuneRequestError as tmv_ex:
             tmv_ex_extra = tmv_ex.to_dict()

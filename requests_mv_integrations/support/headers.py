@@ -5,6 +5,7 @@
 
 import base64
 
+
 def create_header_authorization_basic(
     auth_user,
     auth_secret

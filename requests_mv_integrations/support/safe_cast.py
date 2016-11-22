@@ -3,6 +3,7 @@
 #  @copyright 2016 TUNE, Inc. (http://www.tune.com)
 #  @namespace tune_mv_integration
 
+
 def safe_cast(val, to_type, default=None):
     """Safely cast value to type, and if failed, returned default.
 
