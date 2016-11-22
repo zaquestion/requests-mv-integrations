@@ -7,22 +7,50 @@ TUNE Multiverse Request
 =======================
 """
 
+import logging
 import requests
-from requests_mv_integrations.errors.exceptions import (TuneRequestError, TuneRequestModuleError)
-from requests_mv_integrations.errors.errors_traceback import (get_exception_message, print_traceback)
+from requests_mv_integrations.errors.exceptions import (
+    TuneRequestError,
+    TuneRequestModuleError,
+)
+from requests_mv_integrations.errors.errors_traceback import (
+    get_exception_message,
+    print_traceback,
+)
 from requests_mv_integrations.errors.exit_code import (TuneIntegrationExitCode)
 from requests_mv_integrations.support import (
-    base_class_name, python_check_version, REQUEST_RETRY_EXCPS, REQUEST_RETRY_HTTP_STATUS_CODES
+    base_class_name,
+    python_check_version,
+    REQUEST_RETRY_EXCPS,
+    REQUEST_RETRY_HTTP_STATUS_CODES,
 )
 from requests_mv_integrations import (__python_required_version__)
 from .request_mv_integration import (RequestMvIntegration)
+from logging_mv_integrations import (TuneLoggingFormat)
+
+log = logging.getLogger(__name__)
 
 python_check_version(__python_required_version__)
 
 
-class RequestMvIntegrationUpload(RequestMvIntegration):
-    def __init__(self, logger_level):
-        super(RequestMvIntegrationUpload, self).__init__(logger_level=logger_level)
+class RequestMvIntegrationUpload(object):
+
+    __mv_request = None
+
+    def __init__(
+        self,
+        logger_level=logging.INFO,
+        logger_format=TuneLoggingFormat.JSON,
+    ):
+        self.mv_request = RequestMvIntegration(logger_format=logger_format, logger_level=logger_level)
+
+    @property
+    def mv_request(self):
+        return self.__mv_request
+
+    @mv_request.setter
+    def mv_request(self, value):
+        self.__mv_request = value
 
     def request_upload_json_file(
         self,
@@ -71,7 +99,7 @@ class RequestMvIntegrationUpload(RequestMvIntegration):
 
         try:
             with open(upload_data_file_path, 'rb') as upload_fp:
-                response = self.request(
+                response = self.mv_request.request(
                     request_method="PUT",
                     request_url=upload_request_url,
                     request_params=None,
@@ -143,7 +171,7 @@ class RequestMvIntegrationUpload(RequestMvIntegration):
             upload_request_retry["timeout"] = int(upload_timeout)
 
         try:
-            response = self.request(
+            response = self.mv_request.request(
                 request_method="PUT",
                 request_url=upload_request_url,
                 request_params=None,

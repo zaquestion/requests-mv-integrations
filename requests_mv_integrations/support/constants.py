@@ -28,9 +28,16 @@ HEADER_CONTENT_TYPE_APP_URLENCODED = \
 HEADER_USER_AGENT = \
     {'User-Agent': __USER_AGENT__}
 
-REQUEST_RETRY_EXCPS = (requests.exceptions.ConnectTimeout, requests.exceptions.ReadTimeout, requests.exceptions.Timeout)
+REQUEST_RETRY_EXCPS = (
+    requests.exceptions.ConnectTimeout,
+    requests.exceptions.ReadTimeout,
+    requests.exceptions.Timeout,
+)
 
 REQUEST_RETRY_HTTP_STATUS_CODES = [
-    HttpStatusCode.INTERNAL_SERVER_ERROR, HttpStatusCode.BAD_GATEWAY, HttpStatusCode.SERVICE_UNAVAILABLE,
-    HttpStatusCode.GATEWAY_TIMEOUT, HttpStatusCode.TOO_MANY_REQUESTS
+    HttpStatusCode.INTERNAL_SERVER_ERROR,
+    HttpStatusCode.BAD_GATEWAY,
+    HttpStatusCode.SERVICE_UNAVAILABLE,
+    HttpStatusCode.GATEWAY_TIMEOUT,
+    HttpStatusCode.TOO_MANY_REQUESTS,
 ]
