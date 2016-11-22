@@ -54,7 +54,7 @@ clean:
 # Make a project distributable.
 dist: clean
 	@echo "======================================================"
-	@echo dist
+	@echo dist $(REQUESTS_MV_INTGS_PKG)
 	@echo "======================================================"
 	@echo Building: $(REQUESTS_MV_INTGS_WHEEL_ARCHIVE)
 	$(PYTHON3) --version
@@ -108,17 +108,15 @@ local-dev: remove-package
 	$(PIP3) install --upgrade .
 	$(PIP3) freeze | grep $(REQUESTS_MV_INTGS_PKG)
 
-dist:
-	rm -fR ./dist/*
-	$(PYTHON3) $(SETUP_FILE) sdist --format=zip,gztar upload
-	$(PYTHON3) $(SETUP_FILE) bdist_egg upload
-	$(PYTHON3) $(SETUP_FILE) bdist_wheel upload
-
-build:
+build: clean
+	@echo "======================================================"
+	@echo build $(REQUESTS_MV_INTGS_PKG)
+	@echo "======================================================"
 	$(PIP3) install --upgrade -r requirements.txt
 	$(PYTHON3) $(SETUP_FILE) clean
 	$(PYTHON3) $(SETUP_FILE) build
 	$(PYTHON3) $(SETUP_FILE) install
+	ls -al ./dist/$(REQUESTS_MV_INTGS_PKG_PREFIX_PATTERN)
 
 # Register the module with PyPi.
 register:

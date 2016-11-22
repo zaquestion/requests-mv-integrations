@@ -1131,7 +1131,18 @@ class RequestMvIntegration(object):
             )
             raise
 
-        assert response
+        if not response:
+            self.logger.error(
+                "Failed to get response",
+                extra={
+                    'request_curl': self.built_request_curl
+                }
+            )
+            raise TuneRequestError(
+                error_message="Failed to get response",
+                exit_code=TuneIntegrationExitCode.MOD_ERR_UNEXPECTED_VALUE,
+                error_request_curl=self.built_request_curl
+            )
 
         http_status_code = response.status_code
         response_headers = json.loads(json.dumps(dict(response.headers)))

@@ -21,7 +21,6 @@ from .constants import (
     __MODULE_SIG__,
     __PYTHON_VERSION__,
     __TIMEZONE_NAME_DEFAULT__,
-    __INTEGRATION_NAME_DEFAULT__,
     __USER_AGENT__,
     __LOGGER_NAME__,
 

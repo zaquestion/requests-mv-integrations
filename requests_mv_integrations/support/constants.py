@@ -20,7 +20,6 @@ __MODULE_SIG__ = "%s/%s" % (
 )
 
 __TIMEZONE_NAME_DEFAULT__ = "UTC"
-__INTEGRATION_NAME_DEFAULT__ = 'TUNE MV Integration'
 
 __PYTHON_VERSION__ = 'Python/%d.%d.%d' % (
     sys.version_info[0],
