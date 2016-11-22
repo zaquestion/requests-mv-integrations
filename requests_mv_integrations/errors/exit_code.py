@@ -90,18 +90,18 @@ class TuneIntegrationExitCode(HttpStatusCode):
     MOD_ERR_PAYLOAD_NOT_FOUND = 631
     MOD_ERR_CONFIG_S3_URL_EXPIRED = 632
 
-    MOD_ERR_COLLECT_DATA = 640   # Error during data collection
-    MOD_ERR_UPLOAD_DATA = 641    # Error during data upload
-    MOD_ERR_INTEGRATION = 642    # Error during integration
+    MOD_ERR_COLLECT_DATA = 640  # Error during data collection
+    MOD_ERR_UPLOAD_DATA = 641  # Error during data upload
+    MOD_ERR_INTEGRATION = 642  # Error during integration
 
-    MOD_ERR_RUN_TIMEOUT = 650    # Timeout error during data collection
+    MOD_ERR_RUN_TIMEOUT = 650  # Timeout error during data collection
     MOD_ERR_RUNTIME_ERROR = 651  # Runtime error during data collection
-    MOD_ERR_RUN_STOPPED = 652    # Stopped error during data collection
+    MOD_ERR_RUN_STOPPED = 652  # Stopped error during data collection
 
-    MOD_ERR_AUTH_ERROR = 660             # Auth Error
-    MOD_ERR_AUTH_JSON_ERROR = 661        # Auth JSON Error
-    MOD_ERR_AUTH_RESP_ERROR = 662        # Auth Response Error
-    MOD_ERR_AUTH_MISSING_PARAMS = 663    # Auth Missing Parameters
-    MOD_ERR_AUTH_INVALID_PARAMS = 664    # Auth Invalid Parameters
+    MOD_ERR_AUTH_ERROR = 660  # Auth Error
+    MOD_ERR_AUTH_JSON_ERROR = 661  # Auth JSON Error
+    MOD_ERR_AUTH_RESP_ERROR = 662  # Auth Response Error
+    MOD_ERR_AUTH_MISSING_PARAMS = 663  # Auth Missing Parameters
+    MOD_ERR_AUTH_INVALID_PARAMS = 664  # Auth Invalid Parameters
 
-    MOD_ERR_UNEXPECTED = 699             # Unexpected Error
+    MOD_ERR_UNEXPECTED = 699  # Unexpected Error

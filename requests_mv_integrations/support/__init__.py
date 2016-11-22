@@ -47,6 +47,9 @@ from .safe_cast import (
     safe_int,
     safe_str
 )
+from .singleton import (
+    Singleton
+)
 from .url import (
     create_request_url,
     is_valid_url_exists,

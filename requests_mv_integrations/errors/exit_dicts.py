@@ -12,7 +12,6 @@ from pyhttpstatus_utils.status_dicts import name as http_status_codes
 name = {
     -1: 'Unassigned',
     0: 'Success',
-
     600: 'Module Error',
     601: 'Configuration Error',
     602: 'Argument Error',
@@ -32,36 +31,29 @@ name = {
     616: 'Response Incomplete Read',
     617: 'Response Chuncked Encoding',
     618: 'Response Data Invalid',
-
     620: 'Retry Exhausted',
     621: 'Service Unavailable',
     622: 'Job Stopped',
-
     630: 'Payload Read',
     631: 'Payload Not Found',
     632: 'AWS S3 URL Expired',
-
     640: 'Collect Data Error',
     641: 'Upload Data Error',
     642: 'Integration Error',
-
     650: 'Run Timeout Error',
     651: 'Runtime Error',
     652: 'Run Stopped Error',
-
     660: 'Auth Error',
     661: 'Auth JSON Error',
     662: 'Auth Response Error',
     663: 'Auth Missing Parameters',
     664: 'Auth Invalid Parameters',
-
     699: 'Unexpected Error'
 }
 
 description = {
     -1: 'Unassiged exit condition',
     0: 'Successfully completed',
-
     600: 'Error occurred somewhere within module',
     601: 'Configuration Error',
     602: 'Invalid or missing argument provided',
@@ -85,35 +77,24 @@ description = {
     621: 'Service Unavailable',
     622: 'Job Stopped',
     623: 'Unexpected content-type returned',
-
     630: 'Payload Read',
     631: 'Payload Not Found',
     632: 'AWS S3 URL Expired',
-
     640: 'Collect Data Error',
     641: 'Upload Data Error',
     642: 'Integration Error',
-
     650: 'Timeout error during data collection',
     651: 'Runtime error during data collection',
     652: 'Stopped error during data collection',
-
     660: 'Auth Error',
     661: 'Auth JSON Error',
     662: 'Auth Response Error',
     663: 'Auth Missing Parameters',
     664: 'Auth Invalid Parameters',
-
     699: 'Unexpected Error'
 }
 
-type = {
-    600: 'Module Error',
-    630: 'Configuration Error',
-    640: 'Process Error',
-    650: 'Run Error',
-    660: 'Auth Error'
-}
+type = {600: 'Module Error', 630: 'Configuration Error', 640: 'Process Error', 650: 'Run Error', 660: 'Auth Error'}
 
 
 def exit_name(exit_code):

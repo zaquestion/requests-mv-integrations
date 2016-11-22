@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 #  @copyright 2016 TUNE, Inc. (http://www.tune.com)
 #  @namespace requests_mv_integrations
-
 """Helpers: Functions for commonly used utilities.
 """
 
@@ -33,14 +32,8 @@ def python_check_version(required_version):
     else:
         sys.stderr.write(
             "[%s] - Error: Python interpreter must be %d.%d or greater"
-            " to use this library, current version is %d.%d.\n"
-            % (
-                sys.argv[0],
-                required_version[0],
-                required_version[1],
-                current_version[0],
-                current_version[1]
-            )
+            " to use this library, current version is %d.%d.\n" %
+            (sys.argv[0], required_version[0], required_version[1], current_version[0], current_version[1])
         )
         sys.exit(-1)
     return 0
@@ -58,10 +51,7 @@ def json_encode(data):
     return json.dumps(data, separators=(',', ':'))
 
 
-def convert_size(
-    size,
-    precision=2
-):
+def convert_size(size, precision=2):
     """Convert Size
 
     Args:

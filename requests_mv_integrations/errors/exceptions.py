@@ -9,16 +9,9 @@ TUNE Mv-Integration Errors
 import six
 # from pprintpp import pprint
 
-from requests_mv_integrations.support import (
-    safe_str
-)
-from requests_mv_integrations.errors import (
-    exit_desc,
-    exit_name
-)
-from requests_mv_integrations.errors.exit_code import (
-    TuneIntegrationExitCode
-)
+from requests_mv_integrations.support import (safe_str)
+from requests_mv_integrations.errors import (exit_desc, exit_name)
+from requests_mv_integrations.errors.exit_code import (TuneIntegrationExitCode)
 
 
 # @brief TUNE Multiverse Error Base Class
@@ -54,10 +47,7 @@ class TuneIntegrationBaseError(Exception):
         if error_origin is not None:
             self.__error_origin = error_origin
 
-        self.__error_message = self._error_message(
-            error_message=error_message,
-            exit_code=self.exit_code
-        )
+        self.__error_message = self._error_message(error_message=error_message, exit_code=self.exit_code)
 
         # Call the base class constructor with the parameters it needs
         super(TuneIntegrationBaseError, self).__init__(self.error_message)
@@ -122,35 +112,23 @@ class TuneIntegrationBaseError(Exception):
         self.__error_request_curl = value
 
     @staticmethod
-    def _error_message(
-        error_message,
-        exit_code
-    ):
+    def _error_message(error_message, exit_code):
         error_message_ = None
         exit_code_description_ = exit_desc(exit_code).rstrip('\.')
 
-        error_message_prefix_ = "{}: {}".format(
-            exit_code,
-            exit_code_description_
-        )
+        error_message_prefix_ = "{}: {}".format(exit_code, exit_code_description_)
 
         error_message = safe_str(error_message).strip()
 
         if error_message:
-            error_message_ = "%s: '%s'" % (
-                error_message_prefix_,
-                six.text_type(error_message)
-            )
+            error_message_ = "%s: '%s'" % (error_message_prefix_, six.text_type(error_message))
         elif exit_code_description_:
             error_message_ = error_message_prefix_
 
         return error_message_
 
     @staticmethod
-    def _exit_code(
-        exit_code,
-        exit_code_default
-    ):
+    def _exit_code(exit_code, exit_code_default):
         """Prepare exit code.
         """
         exit_code_ = None
@@ -175,47 +153,35 @@ class TuneIntegrationBaseError(Exception):
                 error_message += ", "
             else:
                 error_message = ""
-            error_message += "Reason: '{error_reason}'".format(
-                error_reason=self.error_reason
-            )
+            error_message += "Reason: '{error_reason}'".format(error_reason=self.error_reason)
         if self.error_status:
             if error_message:
                 error_message += ", "
             else:
                 error_message = ""
-            error_message += "Status: {error_status}".format(
-                error_status=self.error_status
-            )
+            error_message += "Status: {error_status}".format(error_status=self.error_status)
         if self.exit_code:
             if error_message:
                 error_message += ", "
             else:
                 error_message = ""
             error_message += "Code: {exit_code}, Name: {exit_name}".format(
-                exit_code=self.exit_code,
-                exit_name=exit_name(self.exit_code)
+                exit_code=self.exit_code, exit_name=exit_name(self.exit_code)
             )
         if self.error_details:
             if error_message:
                 error_message += ", "
             else:
                 error_message = ""
-            error_message += "Details: {error_details}".format(
-                error_details=self.error_details
-            )
+            error_message += "Details: {error_details}".format(error_details=self.error_details)
         if self.errors:
             if error_message:
                 error_message += ", "
             else:
                 error_message = ""
-            error_message += "Errors: {errors}".format(
-                errors=self.errors
-            )
+            error_message += "Errors: {errors}".format(errors=self.errors)
 
-        return "{}: {}".format(
-            error_origin,
-            error_message
-        )
+        return "{}: {}".format(error_origin, error_message)
 
     def to_dict(self):
 
@@ -227,25 +193,15 @@ class TuneIntegrationBaseError(Exception):
         }
 
         if self.error_message:
-            dict_.update({
-                'error_message': self.error_message
-            })
+            dict_.update({'error_message': self.error_message})
         if self.error_status:
-            dict_.update({
-                'error_status': self.error_status
-            })
+            dict_.update({'error_status': self.error_status})
         if self.error_reason:
-            dict_.update({
-                'error_reason': self.error_reason
-            })
+            dict_.update({'error_reason': self.error_reason})
         if self.error_details:
-            dict_.update({
-                'error_details': self.error_details
-            })
+            dict_.update({'error_details': self.error_details})
         if self.errors:
-            dict_.update({
-                'errors': self.errors
-            })
+            dict_.update({'errors': self.errors})
 
         return dict_
 
@@ -266,12 +222,14 @@ class TuneRequestModuleError(TuneRequestError):
     pass
 
 
+class ModuleArgumentError(TuneIntegrationBaseError):
+    def __init__(self, **kwargs):
+        exit_code = kwargs.pop('exit_code', None) or TuneIntegrationExitCode.MOD_ERR_ARGUMENT
+        super(ModuleArgumentError, self).__init__(exit_code=exit_code, **kwargs)
+
+
 class ModuleAuthenticationError(TuneIntegrationBaseError):
     def __init__(self, **kwargs):
         exit_code = kwargs.pop('exit_code', None) or TuneIntegrationExitCode.MOD_ERR_AUTH_ERROR
         error_origin = kwargs.pop('error_origin', None) or 'Authentication'
-        super(ModuleAuthenticationError, self).__init__(
-            exit_code=exit_code,
-            error_origin=error_origin,
-            **kwargs
-        )
+        super(ModuleAuthenticationError, self).__init__(exit_code=exit_code, error_origin=error_origin, **kwargs)

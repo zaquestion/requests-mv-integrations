@@ -5,10 +5,8 @@
 
 import base64
 
-def create_header_authorization_basic(
-    auth_user,
-    auth_secret
-):
+
+def create_header_authorization_basic(auth_user, auth_secret):
     """Create Authorization Basic header
 
     Args:
@@ -19,13 +17,9 @@ def create_header_authorization_basic(
 
     """
     if not auth_user:
-        raise ValueError(
-            "Missing 'auth_user'"
-        )
+        raise ValueError("Missing 'auth_user'")
     if not auth_secret:
-        raise ValueError(
-            "Missing 'auth_secret'"
-        )
+        raise ValueError("Missing 'auth_secret'")
     str_basic_auth = \
         bytes(
             "%s:%s" % (
@@ -39,8 +33,6 @@ def create_header_authorization_basic(
     b64_auth = \
         b64bytes_auth.decode('utf-8')
 
-    header_authorization_basic = {
-        'Authorization': 'Basic ' + b64_auth
-    }
+    header_authorization_basic = {'Authorization': 'Basic ' + b64_auth}
 
     return header_authorization_basic
