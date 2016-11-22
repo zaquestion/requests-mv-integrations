@@ -1,25 +1,14 @@
-
 import logging
 
 from pprintpp import pprint
-from requests_mv_integrations import (
-    RequestMvIntegration,
-    __version__
-)
-from requests_mv_integrations.support import (
-    HEADER_CONTENT_TYPE_APP_JSON
-)
-from logging_mv_integrations import (
-    TuneLogging,
-    TuneLoggingFormat
-)
+from requests_mv_integrations import (RequestMvIntegration, __version__)
+from requests_mv_integrations.support import (HEADER_CONTENT_TYPE_APP_JSON)
+from logging_mv_integrations import (TuneLogging, TuneLoggingFormat)
 
 URL_TUNE_MAT_API_COUNTRIES = \
     'https://api.mobileapptracking.com/v2/countries/find.json'
 
-tune_requests_mv_intgs = RequestMvIntegration(
-    logger_level=logging.DEBUG
-)
+tune_requests_mv_intgs = RequestMvIntegration(logger_level=logging.DEBUG)
 
 log = TuneLogging(
     logger_name=__name__.split('.')[0],
@@ -28,9 +17,7 @@ log = TuneLogging(
     logger_format=TuneLoggingFormat.JSON
 )
 
-log.info(
-    "Start"
-)
+log.info("Start")
 
 result = \
     tune_requests_mv_intgs.request(
@@ -42,10 +29,7 @@ result = \
         request_label="TMC Countries"
     )
 
-log.info(
-    "Completed",
-    extra=vars(result)
-)
+log.info("Completed", extra=vars(result))
 
 json_tune_mat_countries = result.json()
 
