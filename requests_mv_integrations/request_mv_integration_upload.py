@@ -52,6 +52,9 @@ class RequestMvIntegrationUpload(object):
     def mv_request(self, value):
         self.__mv_request = value
 
+    def request(self, **kwargs):
+        return self.mv_request.request(**kwargs)
+
     def request_upload_json_file(
         self,
         upload_request_url,

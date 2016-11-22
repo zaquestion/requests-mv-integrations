@@ -8,6 +8,9 @@
 .idea
 .dartignore
 
+dist/
+
+
 # Code build files
 *.egg-info/
 build/

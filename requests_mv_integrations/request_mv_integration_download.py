@@ -59,6 +59,9 @@ class RequestMvIntegrationDownload(object):
     def mv_request(self, value):
         self.__mv_request = value
 
+    def request(self, **kwargs):
+        return self.mv_request.request(**kwargs)
+
     def request_csv_download(
         self,
         request_method,
