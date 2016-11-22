@@ -807,8 +807,7 @@ class RequestMvIntegration(object):
         build_request_curl=True,
         allow_redirects=True,
         verify=True,
-        stream=False,
-        verbose=False
+        stream=False
     ):
         """Constructs and sends a :class:`Request <Request>`.
 
@@ -846,28 +845,6 @@ class RequestMvIntegration(object):
         )
 
         self.session = tune_request.session
-
-        self.logger.debug(
-            "Send Request: Details: {}".format(
-                request_label if request_label else ""
-            ),
-            extra={
-                'request_method': request_method,
-                'request_url': request_url,
-                'request_params': request_params,
-                'request_data': request_data,
-                'request_json': request_json,
-                'request_headers': request_headers,
-                'request_auth': request_auth,
-                'request_session': request_session,
-                'cookie_payload': cookie_payload,
-                'timeout': timeout,
-                'allow_redirects': allow_redirects,
-                'verify': verify,
-                'stream': stream,
-                'verbose': verbose
-            }
-        )
 
         if not request_method:
             raise TuneRequestError(
@@ -914,30 +891,6 @@ class RequestMvIntegration(object):
                 request_data_extra = request_data[:20] + ' ...'
         else:
             request_data_extra = safe_str(request_data)
-
-        request_extra = {
-            'request_method': request_method,
-            'request_url': request_url,
-            'timeout': timeout,
-            'request_params': safe_dict(request_params),
-            'request_data': request_data_extra,
-            'request_headers': safe_dict(headers)
-        }
-
-        if verbose:
-            self.logger.info(
-                "Send Request: Details: {}".format(
-                    request_label if request_label else ""
-                ),
-                extra=request_extra
-            )
-        else:
-            self.logger.debug(
-                "Send Request: Details: {}".format(
-                    request_label if request_label else ""
-                ),
-                extra=request_extra
-            )
 
         self.built_request_curl = None
 
@@ -1161,16 +1114,10 @@ class RequestMvIntegration(object):
             'request_label': request_label
         }
 
-        if verbose:
-            self.logger.info(
-                "Send Request: Response: Details",
-                extra=response_extra
-            )
-        else:
-            self.logger.debug(
-                "Send Request: Response: Details",
-                extra=response_extra
-            )
+        self.logger.debug(
+            "Send Request: Response: Details",
+            extra=response_extra
+        )
 
         http_status_successful = is_http_status_type(
             http_status_code=http_status_code,
@@ -1189,17 +1136,6 @@ class RequestMvIntegration(object):
                 response_extra.update({
                     'response_url': response.url
                 })
-
-            if verbose:
-                self.logger.info(
-                    "Send Request: Response: Success",
-                    extra=response_extra
-                )
-            else:
-                self.logger.debug(
-                    "Send Request: Response: Success",
-                    extra=response_extra
-                )
 
             if request_session:
                 self.logger.debug(
