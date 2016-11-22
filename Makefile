@@ -125,7 +125,7 @@ dist: clean
 	@echo dist $(PACKAGE)
 	@echo "======================================================"
 	$(PIP3) install --upgrade -r requirements.txt
-	find ./dist/ -name $(PACKAGE_PATTERN) -exec rm -vf {} \;
+	find ./dist/ -name $(PACKAGE_PREFIX_WILDCARD) -exec rm -vf {} \;
 	$(PYTHON3) $(SETUP_FILE) bdist_wheel upload
 	$(PYTHON3) $(SETUP_FILE) bdist_egg upload
 	$(PYTHON3) $(SETUP_FILE) sdist --format=zip,gztar upload
@@ -136,7 +136,7 @@ build: clean
 	@echo build $(PACKAGE)
 	@echo "======================================================"
 	$(PIP3) install --upgrade -r requirements.txt
-	find ./dist/ -name $(PACKAGE_PATTERN) -exec rm -vf {} \;
+	find ./dist/ -name $(PACKAGE_PREFIX_WILDCARD) -exec rm -vf {} \;
 	$(PYTHON3) $(SETUP_FILE) clean
 	$(PYTHON3) $(SETUP_FILE) build
 	$(PYTHON3) $(SETUP_FILE) install
