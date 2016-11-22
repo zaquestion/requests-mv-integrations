@@ -146,6 +146,9 @@ build: clean
 	@echo "======================================================"
 	$(PIP3) install --upgrade -r requirements.txt
 	$(PYTHON3) $(SETUP_FILE) clean
+	$(PYTHON3) $(SETUP_FILE) bdist_wheel
+	$(PYTHON3) $(SETUP_FILE) bdist_egg
+	$(PYTHON3) $(SETUP_FILE) sdist --format=zip,gztar
 	$(PYTHON3) $(SETUP_FILE) build
 	$(PYTHON3) $(SETUP_FILE) install
 	ls -al ./dist/$(PACKAGE_PREFIX_WILDCARD)
