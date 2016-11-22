@@ -20,7 +20,7 @@ REQUESTS_MV_INTGS_WHEEL_ARCHIVE := dist/$(REQUESTS_MV_INTGS_PKG_PREFIX)-$(VERSIO
 
 REQUESTS_MV_INTGS_FILES := $(shell find $(REQUESTS_MV_INTGS_PKG_PREFIX) ! -name '__init__.py' -type f -name "*.py")
 
-LINT_REQ_FILE := requirements-pylint.txt
+TOOLS_REQ_FILE := requirements-tools.txt
 REQ_FILE      := requirements.txt
 SETUP_FILE    := setup.py
 ALL_FILES     := $(REQUESTS_MV_INTGS_FILES) $(REQ_FILE) $(SETUP_FILE)
@@ -126,23 +126,27 @@ flake8:
 	flake8 --ignore=F401,E265,E129 tune
 	flake8 --ignore=E123,E126,E128,E265,E501 tests
 
-lint: clean
-	pylint --rcfile .pylintrc pycountry-convert | more
+tools-requirements: $(TOOLS_REQ_FILE)
+	$(PIP3) install --upgrade -r $(TOOLS_REQ_FILE)
 
-lint-requirements: $(LINT_REQ_FILE)
-	$(PIP3) install --upgrade -f $(LINT_REQ_FILE)
-
-pep8: lint-requirements
+pep8: tools-requirements
 	@echo pep8: $(REQUESTS_MV_INTGS_FILES)
 	$(PYTHON3) -m pep8 --config .pep8 $(REQUESTS_MV_INTGS_FILES)
 
-pyflakes: lint-requirements
+pyflakes: tools-requirements
 	@echo pyflakes: $(REQUESTS_MV_INTGS_FILES)
 	$(PYTHON3) -m pyflakes $(REQUESTS_MV_INTGS_FILES)
 
-pylint: lint-requirements
+pylint: tools-requirements
 	@echo pylint: $(REQUESTS_MV_INTGS_FILES)
 	$(PYTHON3) -m pylint --rcfile .pylintrc $(REQUESTS_MV_INTGS_FILES) --disable=C0330,F0401,E0611,E0602,R0903,C0103,E1121,R0913,R0902,R0914,R0912,W1202,R0915,C0302 | more -30
+
+yapf: tools-requirements
+	@echo yapf: $(REQUESTS_MV_INTGS_FILES)
+	$(PYTHON3) -m yapf --style .style.yapf --in-place $(REQUESTS_MV_INTGS_FILES)
+
+lint: tools-requirements
+	pylint --rcfile .pylintrc $(REQUESTS_MV_INTGS_FILES) | more
 
 site-packages:
 	@echo $(PYTHON3_SITE_PACKAGES)

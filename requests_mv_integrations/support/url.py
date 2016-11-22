@@ -9,9 +9,7 @@ import urllib
 
 log = logging.getLogger(__name__)
 
-from requests_mv_integrations.support.safe_cast import (
-    safe_int
-)
+from requests_mv_integrations.support.safe_cast import (safe_int)
 
 
 def is_valid_url_exists(url):
@@ -19,13 +17,7 @@ def is_valid_url_exists(url):
         http_connect = httplib2.Http()
         resp = http_connect.request(url, 'HEAD')
         http_status_code = safe_int(resp[0]['status'])
-        log.debug(
-            "Validate URL Exists",
-            extra={
-                'url': url,
-                'http_status_code': http_status_code
-            }
-        )
+        log.debug("Validate URL Exists", extra={'url': url, 'http_status_code': http_status_code})
         return http_status_code < 400
     except:
         return False
@@ -37,23 +29,13 @@ def is_valid_url_path(url):
         if not resp:
             return False
 
-        log.debug(
-            "Validate URL Path",
-            extra={
-                'url': url,
-                'url_scheme': resp.scheme,
-                'url_netloc': resp.netloc
-            }
-        )
+        log.debug("Validate URL Path", extra={'url': url, 'url_scheme': resp.scheme, 'url_netloc': resp.netloc})
         return resp.scheme and resp.netloc
     except:
         return False
 
 
-def create_request_url(
-    request_url,
-    request_params
-):
+def create_request_url(request_url, request_params):
     """Create Request URL
 
     Args:
@@ -64,6 +46,5 @@ def create_request_url(
 
     """
     return "{request_url}?{query_string}".format(
-        request_url=request_url,
-        query_string=urllib.parse.urlencode(request_params)
+        request_url=request_url, query_string=urllib.parse.urlencode(request_params)
     )

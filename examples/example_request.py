@@ -39,8 +39,7 @@ result = \
         request_params=None,
         request_retry=None,
         request_headers=HEADER_CONTENT_TYPE_APP_JSON,
-        request_label="TMC Countries",
-        request_session=True
+        request_label="TMC Countries"
     )
 
 log.info(

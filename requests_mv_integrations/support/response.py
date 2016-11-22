@@ -6,12 +6,11 @@
 import json
 import xmltodict
 from bs4 import BeautifulSoup
+
 # from pprintpp import pprint
 
 
-def requests_response_text_html(
-    response
-):
+def requests_response_text_html(response):
     """Get HTML Text only
 
     Args:
@@ -38,23 +37,14 @@ def requests_response_text_html(
             response_content_html_lines = \
                 [x for x in response_content_html_lines if x != '']
         except Exception as ex:
-            raise ValueError(
-                "Failed to parse text/html",
-                errors=ex
-            )
+            raise ValueError("Failed to parse text/html", errors=ex)
     else:
-        raise ValueError(
-            "Unexpected 'Content-Type': '{}'".format(
-                response_content_type
-            )
-        )
+        raise ValueError("Unexpected 'Content-Type': '{}'".format(response_content_type))
 
     return response_content_html_lines
 
 
-def requests_response_text_xml(
-    response
-):
+def requests_response_text_xml(response):
     """Get HTML Text only
 
     Args:
@@ -80,10 +70,6 @@ def requests_response_text_xml(
             xml_json = json.loads(json.dumps(xml_dictionary))
 
     else:
-        raise ValueError(
-            "Unexpected 'Content-Type': '{}'".format(
-                response_content_type
-            )
-        )
+        raise ValueError("Unexpected 'Content-Type': '{}'".format(response_content_type))
 
     return xml_json
