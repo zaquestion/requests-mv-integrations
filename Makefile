@@ -24,6 +24,7 @@ VERSION := $(shell $(PYTHON3) setup.py version)
 WHEEL_ARCHIVE := dist/$(PACKAGE_PREFIX)-$(VERSION)-$(PACKAGE_SUFFIX)
 
 PACKAGE_FILES := $(shell find $(PACKAGE_PREFIX) examples ! -name '__init__.py' -type f -name "*.py")
+PACKAGE_ALL_FILES := $(shell find $(PACKAGE_PREFIX) examples -type f -name "*.py")
 TOOLS_REQ_FILE := requirements-tools.txt
 REQ_FILE      := requirements.txt
 SETUP_FILE    := setup.py
@@ -124,6 +125,7 @@ dist: clean
 	@echo "======================================================"
 	@echo remove $(PACKAGE_PREFIX_WILDCARD) and $(PACKAGE_WILDCARD)
 	@echo "======================================================"
+	mkdir -p ./dist/
 	find ./dist/ -name $(PACKAGE_WILDCARD) -exec rm -vf {} \;
 	find ./dist/ -name $(PACKAGE_PREFIX_WILDCARD) -exec rm -vf {} \;
 	@echo "======================================================"
@@ -139,6 +141,7 @@ build: clean
 	@echo "======================================================"
 	@echo remove $(PACKAGE_PREFIX_WILDCARD) and $(PACKAGE_WILDCARD)
 	@echo "======================================================"
+	mkdir -p ./dist/
 	find ./dist/ -name $(PACKAGE_WILDCARD) -exec rm -vf {} \;
 	find ./dist/ -name $(PACKAGE_PREFIX_WILDCARD) -exec rm -vf {} \;
 	@echo "======================================================"
@@ -186,8 +189,8 @@ yapf: tools-requirements
 	@echo "======================================================"
 	@echo yapf $(PACKAGE)
 	@echo "======================================================"
-	@echo yapf: $(PACKAGE_FILES)
-	$(PYTHON3) -m yapf --style .style.yapf --in-place $(PACKAGE_FILES)
+	@echo yapf: $(PACKAGE_ALL_FILES)
+	$(PYTHON3) -m yapf --style .style.yapf --in-place $(PACKAGE_ALL_FILES)
 
 lint: tools-requirements
 	@echo "======================================================"

@@ -10,77 +10,7 @@ import six
 # from pprintpp import pprint
 
 
-def to_bytes(value, encoding='ascii'):
-    """Converts a string value to bytes, if necessary.
-
-    Unfortunately, ``six.b`` is insufficient for this task since in
-    Python2 it does not modify ``unicode`` objects.
-
-    Args:
-        value: The string/bytes value to be converted.
-        encoding: The encoding to use to convert unicode to bytes. Defaults
-                  to "ascii", which will not allow any characters from ordinals
-                  larger than 127. Other useful values are "latin-1", which
-                  which will only allows byte ordinals (up to 255) and "utf-8",
-                  which will encode any unicode that needs to be.
-
-    Returns:
-        The original value converted to bytes (if unicode) or as passed in
-        if it started out as bytes.
-
-    Raises:
-        ValueError if the value could not be converted to bytes.
-    """
-    result = (value.encode(encoding) if isinstance(value, six.text_type) else value)
-    if isinstance(result, six.binary_type):
-        return result
-    else:
-        raise ValueError('%r could not be converted to bytes' % (value,))
-
-
-def from_bytes(value):
-    """Converts bytes to a string value, if necessary.
-
-    Args:
-        value: The string/bytes value to be converted.
-
-    Returns:
-        The original value converted to unicode (if bytes) or as passed in
-        if it started out as unicode.
-
-    Raises:
-        ValueError if the value could not be converted to unicode.
-    """
-    result = (value.decode('utf-8') if isinstance(value, six.binary_type) else value)
-    if isinstance(result, six.text_type):
-        return result
-    else:
-        raise ValueError('%r could not be converted to unicode' % (value,))
-
-
-def urlsafe_b64encode(raw_bytes):
-    """URL Safe Byte 64
-
-    Args:
-        raw_bytes:
-
-    Returns:
-
-    """
-    raw_bytes = to_bytes(raw_bytes, encoding='utf-8')
-    return base64.urlsafe_b64encode(raw_bytes).rstrip(b'=')
-
-
-def urlsafe_b64decode(b64string):
-    """Guard against unicode strings, which base64 can't handle.
-    """
-
-    b64string = to_bytes(b64string)
-    padded = b64string + b'=' * (4 - len(b64string) % 4)
-    return base64.urlsafe_b64decode(padded)
-
-
-def determine_encoding(file_header):
+def get_bom_encoding(file_header):
     """Check file header if it contains byte order mark (BOM)
 
     Args:
@@ -128,7 +58,7 @@ def detect_bom(filename):
     with open(filename, 'rb') as file_rb:
         # read first 4 bytes
         file_header = file_rb.read(6)
-        bom_enc, bom_len = determine_encoding(file_header)
+        bom_enc, bom_len = get_bom_encoding(file_header)
 
     bom_header = str(file_header)
     return bom_enc, bom_len, bom_header
@@ -147,7 +77,7 @@ def remove_bom(filename, newfilename):
     with open(filename, 'rb') as file_rb:
         # read first 4 bytes
         file_header = file_rb.read(6)
-        bom_enc, bom_len = determine_encoding(file_header)
+        bom_enc, bom_len = get_bom_encoding(file_header)
 
         if bom_len > 0:
             file_rb.seek(0)

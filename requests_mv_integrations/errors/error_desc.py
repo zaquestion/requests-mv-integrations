@@ -97,47 +97,47 @@ description = {
 type = {600: 'Module Error', 630: 'Configuration Error', 640: 'Process Error', 650: 'Run Error', 660: 'Auth Error'}
 
 
-def exit_name(exit_code):
-    """Provide definition of Exit Code
+def error_name(error_code):
+    """Provide definition of Error Code
 
     Args:
-        exit_code:
+        error_code:
 
     Returns:
 
     """
-    if exit_code is None or not isinstance(exit_code, int):
-        return "Exit Code: Invalid Type: {}: {}".format(exit_code, type(exit_code))
+    if error_code is None or not isinstance(error_code, int):
+        return "Error Code: Invalid Type: {}: {}".format(error_code, type(error_code))
 
-    exit_code_name_ = http_status_codes.get(exit_code, None)
+    exit_code_name_ = http_status_codes.get(error_code, None)
     if exit_code_name_ is not None:
         return exit_code_name_
 
-    exit_code_name_ = name.get(exit_code, None)
+    exit_code_name_ = name.get(error_code, None)
     if exit_code_name_ is not None:
         return exit_code_name_
 
-    return "Exit Code: Undefined: {}".format(exit_code)
+    return "Error Code: Undefined: {}".format(error_code)
 
 
-def exit_desc(exit_code):
-    """Provide definition of Exit Code
+def error_desc(error_code):
+    """Provide definition of Error Code
 
     Args:
-        exit_code:
+        error_code:
 
     Returns:
 
     """
-    if exit_code is None or not isinstance(exit_code, int):
-        return "Exit Code: Invalid Type: {}: {}".format(exit_code, type(exit_code))
+    if error_code is None or not isinstance(error_code, int):
+        return "Error Code: Invalid Type: {}: {}".format(error_code, type(error_code))
 
-    exit_code_description_ = http_status_desc.get(exit_code, None)
+    exit_code_description_ = http_status_desc.get(error_code, None)
     if exit_code_description_ is not None:
         return exit_code_description_
 
-    exit_code_description_ = description.get(exit_code, None)
+    exit_code_description_ = description.get(error_code, None)
     if exit_code_description_ is not None:
         return exit_code_description_
 
-    return "Exit Code: Undefined: {}".format(exit_code)
+    return "Error Code: Undefined: {}".format(error_code)

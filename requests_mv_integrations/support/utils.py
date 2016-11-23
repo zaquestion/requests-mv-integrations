@@ -9,14 +9,6 @@ import json
 import sys
 
 
-# Print this Docker Job' version.
-#
-def print_version(name, version):
-    """Print Version
-    """
-    print("Module: {}, Version: {}".format(name, version))
-
-
 #  Check Python Version
 #
 def python_check_version(required_version):
@@ -37,18 +29,6 @@ def python_check_version(required_version):
         )
         sys.exit(-1)
     return 0
-
-
-def json_encode(data):
-    """JSON Encoding of Data
-
-    Args:
-        data:
-
-    Returns:
-
-    """
-    return json.dumps(data, separators=(',', ':'))
 
 
 def convert_size(size, precision=2):
