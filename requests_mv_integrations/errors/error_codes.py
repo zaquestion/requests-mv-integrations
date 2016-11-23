@@ -2,14 +2,11 @@
 # -*- coding: utf-8 -*-
 #  @copyright 2016 TUNE, Inc. (http://www.tune.com)
 #  @namespace requests_mv_integrations.errors
-"""
-TUNE Mv-Integration Exit Codes
-"""
 
 from pyhttpstatus_utils.status_code import HttpStatusCode
 
 
-class TuneIntegrationExitCode(HttpStatusCode):
+class RequestErrorCode(HttpStatusCode):
     """TUNE Mv-Integration Exit Codes
     """
     MOD_ERR_UNASSIGNED = -1
@@ -63,12 +60,10 @@ class TuneIntegrationExitCode(HttpStatusCode):
     # returned or null.
 
     MOD_ERR_UNEXPECTED_EXIT = 611
-    # Integration ended unexpectedly
-    # and thereby no exit code was properly determined.
+    # Integration ended unexpectedly and thereby no exit code was properly determined.
 
-    MOD_ERR_REQUEST = 612
-    # There was an ambiguous
-    # exception that occurred while handling your request.
+    MOD_ERR_AMBIGUOUS = 612
+    # There was an ambiguous exception that occurred while handling your request.
 
     MOD_ERR_REQUEST_HTTP = 613
     # An HTTP error occurred.

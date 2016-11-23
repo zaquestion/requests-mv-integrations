@@ -20,11 +20,8 @@ import time
 import requests
 from pprintpp import pprint
 from requests_mv_integrations import (__python_required_version__)
-from requests_mv_integrations.errors import (
-    TuneRequestModuleError,
-    get_exception_message,
-    TuneIntegrationExitCode,
-)
+from requests_mv_integrations.errors import (get_exception_message, print_traceback, RequestErrorCode)
+from requests_mv_integrations.errors.exceptions import (RequestModuleError,)
 from requests_mv_integrations.support import (
     convert_size,
     detect_bom,
@@ -181,9 +178,8 @@ class RequestMvIntegrationDownload(object):
                            'request_label': request_label}
                 )
 
-                raise TuneRequestModuleError(
-                    error_message="Request CSV Download: No response",
-                    exit_code=TuneIntegrationExitCode.MOD_ERR_REQUEST
+                raise RequestModuleError(
+                    error_message="Request CSV Download: No response", error_code=RequestErrorCode.MOD_ERR_REQUEST
                 )
 
             http_status_code = response.status_code
@@ -233,9 +229,9 @@ class RequestMvIntegrationDownload(object):
                            'request_label': request_label}
                 )
 
-                raise TuneRequestModuleError(
-                    error_message=("Request CSV Download: Exhausted Retries"),
-                    exit_code=TuneIntegrationExitCode.MOD_ERR_RETRY_EXHAUSTED
+                raise RequestModuleError(
+                    error_message="Request CSV Download: Exhausted Retries",
+                    error_code=RequestErrorCode.MOD_ERR_RETRY_EXHAUSTED
                 )
 
             log.info(
@@ -397,9 +393,8 @@ class RequestMvIntegrationDownload(object):
                            'request_label': request_label}
                 )
 
-                raise TuneRequestModuleError(
-                    error_message="Request JSON Download: No response",
-                    exit_code=TuneIntegrationExitCode.MOD_ERR_REQUEST
+                raise RequestModuleError(
+                    error_message="Request JSON Download: No response", error_code=RequestErrorCode.MOD_ERR_REQUEST
                 )
 
             http_status_code = response.status_code
@@ -554,12 +549,12 @@ class RequestMvIntegrationDownload(object):
                                'request_label': request_label}
                     )
 
-                    raise TuneRequestModuleError(
+                    raise RequestModuleError(
                         error_message=("Request JSON Download: Exhausted Retries: {}: {}").format(
                             request_label, request_url
                         ),
                         error_request_curl=self.built_request_curl,
-                        exit_code=TuneIntegrationExitCode.MOD_ERR_RETRY_EXHAUSTED
+                        error_code=RequestErrorCode.MOD_ERR_RETRY_EXHAUSTED
                     )
 
                 log.info(
@@ -920,9 +915,9 @@ class RequestMvIntegrationDownload(object):
                             'csv_values_list': csv_values_list,
                         }
                     )
-                    raise TuneRequestModuleError(
+                    raise RequestModuleError(
                         error_message="Mismatch: CSV Key '{}': Values '{}'".format(csv_keys_str, csv_values_str),
-                        exit_code=TuneIntegrationExitCode.MOD_ERR_UNEXPECTED_VALUE
+                        error_code=RequestErrorCode.MOD_ERR_UNEXPECTED_VALUE
                     )
 
                 json_data_row = {}
@@ -1010,11 +1005,11 @@ class RequestMvIntegrationDownload(object):
                                     'csv_values_list': csv_values_list,
                                 }
                             )
-                            raise TuneRequestModuleError(
+                            raise RequestModuleError(
                                 error_message="Mismatch: CSV Key '{}': Values '{}'".format(
                                     csv_keys_str, csv_values_str
                                 ),
-                                exit_code=TuneIntegrationExitCode.MOD_ERR_UNEXPECTED_VALUE
+                                error_code=RequestErrorCode.MOD_ERR_UNEXPECTED_VALUE
                             )
 
                         json_dict = {}

@@ -3,29 +3,22 @@
 #  @copyright 2016 TUNE, Inc. (http://www.tune.com)
 #  @namespace requests_mv_integrations
 
-from .exit_dicts import name as exit_codes
-from .exit_dicts import description as exit_code_descriptions
-from .exit_dicts import type as exit_code_types
-from .exit_dicts import (
-    exit_desc,
-    exit_name
-)
+from .error_codes import (RequestErrorCode)
 from .errors_traceback import (
     get_exception_message,
     print_traceback,
     print_limited_traceback,
-    print_traceback_stack
+    print_traceback_stack,
 )
-from .exit_code import (
-    TuneIntegrationExitCode
+from .error_desc import (
+    error_desc,
+    error_name,
 )
 from .exceptions import (
-    TuneIntegrationBaseError,
-    TuneRequestError,
-    TuneRequestClientError,
-    TuneRequestServiceError,
-    TuneRequestModuleError,
-
-    ModuleAuthenticationError,
-    ModuleArgumentError
+    RequestBaseError,
+    RequestClientError,
+    RequestServiceError,
+    RequestModuleError,
+    RequestAuthenticationError,
+    RequestValueError,
 )
