@@ -44,6 +44,10 @@ name = {
     651: 'Runtime Error',
     652: 'Run Stopped Error',
     660: 'Auth Error',
+    661: 'Auth JSON Error',
+    662: 'Auth Response Error',
+    663: 'Auth Missing Parameters',
+    664: 'Auth Invalid Parameters',
     699: 'Unexpected Error'
 }
 
