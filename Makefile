@@ -124,6 +124,7 @@ dist: clean
 	@echo "======================================================"
 	@echo remove $(PACKAGE_PREFIX_WILDCARD) and $(PACKAGE_WILDCARD)
 	@echo "======================================================"
+	mkdir -p ./dist/
 	find ./dist/ -name $(PACKAGE_WILDCARD) -exec rm -vf {} \;
 	find ./dist/ -name $(PACKAGE_PREFIX_WILDCARD) -exec rm -vf {} \;
 	@echo "======================================================"
@@ -139,6 +140,7 @@ build: clean
 	@echo "======================================================"
 	@echo remove $(PACKAGE_PREFIX_WILDCARD) and $(PACKAGE_WILDCARD)
 	@echo "======================================================"
+	mkdir -p ./dist/
 	find ./dist/ -name $(PACKAGE_WILDCARD) -exec rm -vf {} \;
 	find ./dist/ -name $(PACKAGE_PREFIX_WILDCARD) -exec rm -vf {} \;
 	@echo "======================================================"

@@ -4,12 +4,12 @@
 #  @namespace requests_mv_integrations
 
 __title__ = 'requests-mv-integrations'
-__version__ = '0.0.3'
-__build__ = 0x000003
+__version__ = '0.0.4'
+__build__ = 0x000004
 __version_info__ = tuple(__version__.split('.'))
 
 __author__ = 'jefft@tune.com'
-__license__ = 'Apache 2.0'
+__license__ = 'MIT License'
 
 __python_required_version__ = (3, 0)
 

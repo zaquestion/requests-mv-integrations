@@ -70,29 +70,3 @@ def safe_dict(val):
 
     """
     return safe_cast(val, dict, {})
-
-
-def safe_smart_cast(val):
-    """Safely cast value, default str
-
-    Args:
-        val:
-
-    Returns:
-
-    """
-    to_type = type(val)
-    if to_type == str:
-        return safe_str(val)
-    if to_type == dict:
-        return safe_dict(val)
-    if to_type == int:
-        return safe_int(val)
-    if to_type == float:
-        return safe_float(val)
-
-    return safe_str(str(val))
-
-
-def safe_cost(val):
-    return safe_float(val, ndigits=4)
