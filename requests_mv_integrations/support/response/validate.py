@@ -159,7 +159,11 @@ def validate_json_response(
             response_content_type.startswith(response_content_type_expected)
 
         if is_valid_response_content_type:
-            json_response = requests_response_json(response=response, request_label=request_label)
+            json_response = requests_response_json(
+                response=response,
+                request_curl=request_curl,
+                request_label=request_label,
+            )
         elif response_content_type.startswith('text/html'):
             try:
                 response_content_html_lines = \
@@ -207,7 +211,12 @@ def validate_json_response(
     return json_response
 
 
-def requests_response_json(self, response, request_label=None, raise_ex_if_not_json_response=True):
+def requests_response_json(
+    response,
+    request_curl,
+    request_label=None,
+    raise_ex_if_not_json_response=True,
+):
     """Get JSON from response from requests
 
     Args:
@@ -239,12 +248,12 @@ def requests_response_json(self, response, request_label=None, raise_ex_if_not_j
 
         pprint(response.text)
 
-        self.handle_json_decode_error(
+        handle_json_decode_error(
             response_decode_ex=json_decode_ex,
             response=response,
             response_extra=response_extra,
             request_label=request_label,
-            request_curl=self.built_request_curl
+            request_curl=request_curl
         )
 
     except Exception as ex:
@@ -252,12 +261,12 @@ def requests_response_json(self, response, request_label=None, raise_ex_if_not_j
 
         pprint(response.text)
 
-        self.handle_json_decode_error(
+        handle_json_decode_error(
             response_decode_ex=ex,
             response=response,
             response_extra=response_extra,
             request_label=request_label,
-            request_curl=self.built_request_curl
+            request_curl=request_curl
         )
 
     if json_response is None:
@@ -266,7 +275,7 @@ def requests_response_json(self, response, request_label=None, raise_ex_if_not_j
 
             raise TuneRequestModuleError(
                 error_message="Validate JSON Response: Failed: None",
-                error_request_curl=self.built_request_curl,
+                error_request_curl=request_curl,
                 error_code=TuneRequestErrorCodes.REQ_ERR_SOFTWARE
             )
         else:

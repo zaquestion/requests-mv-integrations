@@ -22,9 +22,11 @@ from requests_mv_integrations import (__python_required_version__)
 from requests_mv_integrations.errors import (get_exception_message, TuneRequestErrorCodes)
 from requests_mv_integrations.exceptions.custom import (TuneRequestModuleError,)
 from requests_mv_integrations.support import (
-    convert_size,
-    detect_bom,
     base_class_name,
+    convert_size,
+    csv_skip_last_row,
+    detect_bom,
+    handle_json_decode_error,
     python_check_version,
     remove_bom,
     safe_dict,
@@ -60,6 +62,10 @@ class RequestMvIntegrationDownload(object):
 
     def request(self, **kwargs):
         return self.mv_request.request(**kwargs)
+
+    @property
+    def built_request_curl(self):
+        return self.mv_request.built_request_curl
 
     def request_csv_download(
         self,
@@ -621,7 +627,7 @@ class RequestMvIntegrationDownload(object):
                     'json_file_content_len': len(json_file_content)
                 })
 
-                self.handle_json_decode_error(
+                handle_json_decode_error(
                     response_decode_ex=json_decode_ex,
                     response=response,
                     response_extra=response_extra,
@@ -639,7 +645,7 @@ class RequestMvIntegrationDownload(object):
 
                 log.error("Request JSON Download: Failed: Exception", extra=response_extra)
 
-                self.handle_json_decode_error(
+                handle_json_decode_error(
                     response_decode_ex=ex,
                     response=response,
                     response_extra=response_extra,

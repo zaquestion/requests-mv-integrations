@@ -56,6 +56,10 @@ class RequestMvIntegrationUpload(object):
     def request(self, **kwargs):
         return self.mv_request.request(**kwargs)
 
+    @property
+    def built_request_curl(self):
+        return self.mv_request.built_request_curl
+
     def request_upload_json_file(
         self,
         upload_request_url,

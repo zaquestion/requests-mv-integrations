@@ -66,7 +66,7 @@ python_check_version(__python_required_version__)
 # @brief Request with retry class for TUNE Multiverse classes
 #
 # @namespace requests_mv_integrations.RequestMvIntegration
-class RequestMvIntegration(metaclass=Singleton):
+class RequestMvIntegration(object):
     """Request with retry class for TUNE Multiverse classes
     """
 
