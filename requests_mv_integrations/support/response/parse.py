@@ -3,9 +3,12 @@
 #  @copyright 2016 TUNE, Inc. (http://www.tune.com)
 #  @namespace tune_mv_integration
 
+import logging
 import json
 import xmltodict
 from bs4 import BeautifulSoup
+
+log = logging.getLogger(__name__)
 
 # from pprintpp import pprint
 

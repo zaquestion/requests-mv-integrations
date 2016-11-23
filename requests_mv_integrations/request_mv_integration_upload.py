@@ -31,7 +31,7 @@ log = logging.getLogger(__name__)
 python_check_version(__python_required_version__)
 
 
-class RequestMvIntegrationUpload(RequestMvIntegration):
+class RequestMvIntegrationUpload(object):
 
     __mv_request = None
 
@@ -40,10 +40,25 @@ class RequestMvIntegrationUpload(RequestMvIntegration):
         logger_level=logging.INFO,
         logger_format=TuneLoggingFormat.JSON,
     ):
-        super(RequestMvIntegrationUpload, self).__init__(
+        self.mv_request = RequestMvIntegration(
+            logger_format=logger_format,
             logger_level=logger_level,
-            logger_format=logger_format
         )
+
+    @property
+    def mv_request(self):
+        return self.__mv_request
+
+    @mv_request.setter
+    def mv_request(self, value):
+        self.__mv_request = value
+
+    def request(self, **kwargs):
+        return self.mv_request.request(**kwargs)
+
+    @property
+    def built_request_curl(self):
+        return self.mv_request.built_request_curl
 
     def request_upload_json_file(
         self,
