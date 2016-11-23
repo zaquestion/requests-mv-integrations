@@ -6,9 +6,6 @@
 from .base import TuneRequestBaseError
 
 from .custom import (
-    TuneRequestClientError,
-    TuneRequestServiceError,
-    TuneRequestModuleError,
-    TuneRequestValueError,
+    TuneRequestClientError, TuneRequestServiceError, TuneRequestModuleError, TuneRequestValueError,
     TuneRequestAuthenticationError
 )

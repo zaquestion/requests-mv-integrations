@@ -187,7 +187,6 @@ yapf: tools-requirements
 	@echo "======================================================"
 	@echo yapf $(PACKAGE)
 	@echo "======================================================"
-	@echo yapf: $(PACKAGE_ALL_FILES)
 	$(PYTHON3) -m yapf --style .style.yapf --in-place $(PACKAGE_ALL_FILES)
 
 lint: tools-requirements
@@ -238,3 +237,6 @@ docs-doxygen:
 	rm -fR ./docs/doxygen/*
 	sudo doxygen docs/Doxyfile
 	x-www-browser docs/doxygen/html/index.html
+
+example:
+	$(PYTHON3) examples/example_request.py

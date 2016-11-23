@@ -4,10 +4,7 @@
 #  @namespace requests_mv_integrations
 
 from .error_codes import (TuneRequestErrorCodes)
-from .error_desc import (
-    error_desc,
-    error_name
-)
+from .error_desc import (error_desc, error_name)
 from .errors_traceback import (
     get_exception_message,
     print_traceback,

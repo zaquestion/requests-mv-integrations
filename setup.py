@@ -22,9 +22,10 @@ REQUIREMENTS = [
 
 PACKAGES = [
     'requests_mv_integrations',
-    'requests_mv_integrations.support',
     'requests_mv_integrations.errors',
-    'requests_mv_integrations.exceptions'
+    'requests_mv_integrations.exceptions',
+    'requests_mv_integrations.support',
+    'requests_mv_integrations.support.response'
 ]
 
 CLASSIFIERS = [
