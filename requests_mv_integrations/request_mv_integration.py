@@ -2,10 +2,6 @@
 # -*- coding: utf-8 -*-
 #  @copyright 2016 TUNE, Inc. (http://www.tune.com)
 #  @namespace requests_mv_integrations
-"""
-TUNE Multiverse Request
-=======================
-"""
 
 import copy
 import datetime as dt
@@ -15,6 +11,7 @@ import os
 import time
 import urllib.parse
 from functools import partial
+
 import bs4
 import requests
 import requests_toolbelt
@@ -39,13 +36,13 @@ from requests_mv_integrations import (
     __python_required_version__,
     __version__,
 )
-from requests_mv_integrations.errors import (get_exception_message, print_traceback, RequestErrorCode)
-from requests_mv_integrations.errors.exceptions import (
-    RequestBaseError,
-    RequestClientError,
-    RequestServiceError,
-    RequestModuleError,
-    RequestValueError,
+from requests_mv_integrations.errors import (get_exception_message, print_traceback, TuneRequestErrorCodes)
+from requests_mv_integrations.exceptions import (
+    TuneRequestBaseError,
+    TuneRequestClientError,
+    TuneRequestServiceError,
+    TuneRequestModuleError,
+    TuneRequestValueError,
 )
 from requests_mv_integrations.support import (
     command_line_request_curl,
@@ -347,88 +344,88 @@ class RequestMvIntegration(object):
             requests.exceptions.ReadTimeout,
             requests.exceptions.Timeout,
         ) as ex_req_timeout:
-            raise RequestServiceError(
+            raise TuneRequestServiceError(
                 error_message="Request: Exception: Timeout",
                 errors=ex_req_timeout,
                 error_request_curl=self.built_request_curl,
-                error_code=RequestErrorCode.GATEWAY_TIMEOUT
+                error_code=TuneRequestErrorCodes.GATEWAY_TIMEOUT
             )
 
         except requests.exceptions.HTTPError as ex_req_http:
-            raise RequestModuleError(
+            raise TuneRequestModuleError(
                 error_message="Request: Exception: HTTP Error",
                 errors=ex_req_http,
                 error_request_curl=self.built_request_curl,
-                error_code=RequestErrorCode.MOD_ERR_REQUEST_HTTP
+                error_code=TuneRequestErrorCodes.REQ_ERR_REQUEST_HTTP
             )
 
         except requests.exceptions.ConnectionError as ex_req_connect:
-            raise RequestModuleError(
+            raise TuneRequestModuleError(
                 error_message="Request: Exception: Connection Error",
                 errors=ex_req_connect,
                 error_request_curl=self.built_request_curl,
-                error_code=RequestErrorCode.MOD_ERR_REQUEST_CONNECT
+                error_code=TuneRequestErrorCodes.REQ_ERR_REQUEST_CONNECT
             )
 
         except BrokenPipeError as ex_broken_pipe:
-            raise RequestModuleError(
+            raise TuneRequestModuleError(
                 error_message="Request: Exception: Broken Pipe Error",
                 errors=ex_broken_pipe,
                 error_request_curl=self.built_request_curl,
-                error_code=RequestErrorCode.MOD_ERR_REQUEST_CONNECT
+                error_code=TuneRequestErrorCodes.REQ_ERR_REQUEST_CONNECT
             )
 
         except ConnectionError as ex_connect:
-            raise RequestModuleError(
+            raise TuneRequestModuleError(
                 error_message="Request: Exception: Connection Error",
                 errors=ex_connect,
                 error_request_curl=self.built_request_curl,
-                error_code=RequestErrorCode.MOD_ERR_REQUEST_CONNECT
+                error_code=TuneRequestErrorCodes.REQ_ERR_REQUEST_CONNECT
             )
 
         except requests.packages.urllib3.exceptions.ProtocolError as ex_req_urllib3_protocol:
-            raise RequestModuleError(
+            raise TuneRequestModuleError(
                 error_message="Request: Exception: Protocol Error",
                 errors=ex_req_urllib3_protocol,
                 error_request_curl=self.built_request_curl,
-                error_code=RequestErrorCode.MOD_ERR_REQUEST_CONNECT
+                error_code=TuneRequestErrorCodes.REQ_ERR_REQUEST_CONNECT
             )
 
         except requests.packages.urllib3.exceptions.ReadTimeoutError as ex_req_urllib3_read_timeout:
-            raise RequestServiceError(
+            raise TuneRequestServiceError(
                 error_message="Request: Exception: Urllib3: Read Timeout Error",
                 errors=ex_req_urllib3_read_timeout,
                 error_request_curl=self.built_request_curl,
-                error_code=RequestErrorCode.GATEWAY_TIMEOUT
+                error_code=TuneRequestErrorCodes.GATEWAY_TIMEOUT
             )
 
         except requests.exceptions.TooManyRedirects as ex_req_redirects:
-            raise RequestModuleError(
+            raise TuneRequestModuleError(
                 error_message="Request: Exception: Too Many Redirects",
                 errors=ex_req_redirects,
                 error_request_curl=self.built_request_curl,
-                error_code=RequestErrorCode.MOD_ERR_REQUEST_REDIRECTS
+                error_code=TuneRequestErrorCodes.REQ_ERR_REQUEST_REDIRECTS
             )
 
         except requests.exceptions.RequestException as ex_req_request:
-            raise RequestModuleError(
+            raise TuneRequestModuleError(
                 error_message="Request: Exception: Request Error",
                 errors=ex_req_request,
                 error_request_curl=self.built_request_curl,
-                error_code=RequestErrorCode.MOD_ERR_REQUEST
+                error_code=TuneRequestErrorCodes.REQ_ERR_REQUEST
             )
 
-        except RequestBaseError:
+        except TuneRequestBaseError:
             raise
 
         except Exception as ex:
             print_traceback(ex)
 
-            raise RequestModuleError(
+            raise TuneRequestModuleError(
                 error_message="Request: Exception: Unexpected",
                 errors=ex,
                 error_request_curl=self.built_request_curl,
-                error_code=RequestErrorCode.MOD_ERR_SOFTWARE
+                error_code=TuneRequestErrorCodes.REQ_ERR_SOFTWARE
             )
 
         time_end_req = dt.datetime.now()
@@ -539,9 +536,9 @@ class RequestMvIntegration(object):
                 response = request_func()
 
                 if not response:
-                    raise RequestModuleError(
+                    raise TuneRequestModuleError(
                         error_message="Request Retry: No response",
-                        error_code=RequestErrorCode.MOD_ERR_UNEXPECTED_VALUE
+                        error_code=TuneRequestErrorCodes.REQ_ERR_UNEXPECTED_VALUE
                     )
 
                 self.logger.debug(
@@ -590,7 +587,7 @@ class RequestMvIntegration(object):
                     )
                     raise
 
-            except RequestBaseError as tmv_ex:
+            except TuneRequestBaseError as tmv_ex:
                 error_exception = tmv_ex
                 tmv_ex_extra = tmv_ex.to_dict()
                 tmv_ex_extra.update({
@@ -641,11 +638,11 @@ class RequestMvIntegration(object):
                 )
 
                 if not _tries:
-                    raise RequestModuleError(
+                    raise TuneRequestModuleError(
                         error_message="Unexpected: {}".format(base_class_name(error_exception)),
                         errors=error_exception,
                         error_request_curl=self.built_request_curl,
-                        error_code=RequestErrorCode.MOD_ERR_RETRY_EXHAUSTED
+                        error_code=TuneRequestErrorCodes.REQ_ERR_RETRY_EXHAUSTED
                     )
 
             if not _tries:
@@ -659,10 +656,10 @@ class RequestMvIntegration(object):
                     }
                 )
 
-                raise RequestModuleError(
+                raise TuneRequestModuleError(
                     error_message=("Request Retry: Exhausted Retries: {}: {}").format(request_label, request_url),
                     error_request_curl=self.built_request_curl,
-                    error_code=RequestErrorCode.MOD_ERR_RETRY_EXHAUSTED
+                    error_code=TuneRequestErrorCodes.REQ_ERR_RETRY_EXHAUSTED
                 )
 
             self.logger.info(
@@ -742,9 +739,9 @@ class RequestMvIntegration(object):
             )
 
         if not request_method:
-            raise RequestValueError(error_message="Parameter 'request_method' not defined")
+            raise TuneRequestValueError(error_message="Parameter 'request_method' not defined")
         if not request_url:
-            raise RequestValueError(error_message="Parameter 'request_url' not defined")
+            raise TuneRequestValueError(error_message="Parameter 'request_url' not defined")
 
         self.built_request_curl = None
 
@@ -926,9 +923,9 @@ class RequestMvIntegration(object):
 
         if not response:
             self.logger.error("Failed to get response", extra={'request_curl': self.built_request_curl})
-            raise RequestModuleError(
+            raise TuneRequestModuleError(
                 error_message="Failed to get response",
-                error_code=RequestErrorCode.MOD_ERR_UNEXPECTED_VALUE,
+                error_code=TuneRequestErrorCodes.REQ_ERR_UNEXPECTED_VALUE,
                 error_request_curl=self.built_request_curl
             )
 
@@ -1024,7 +1021,7 @@ class RequestMvIntegration(object):
                 HttpStatusCode.TOO_MANY_REQUESTS,
             ]:
                 kwargs.update({'error_code': http_status_code})
-                raise RequestClientError(**kwargs)
+                raise TuneRequestClientError(**kwargs)
 
             if http_status_code in [
                 HttpStatusCode.INTERNAL_SERVER_ERROR,
@@ -1034,7 +1031,7 @@ class RequestMvIntegration(object):
                 HttpStatusCode.NETWORK_AUTHENTICATION_REQUIRED,
             ]:
                 kwargs.update({'error_code': http_status_code})
-                raise RequestServiceError(**kwargs)
+                raise TuneRequestServiceError(**kwargs)
 
             kwargs.update({'error_code': json_response_error["response_status_code"]})
 
@@ -1042,7 +1039,7 @@ class RequestMvIntegration(object):
             extra_unhandled.update({'http_status_code': http_status_code})
             self.logger.error("Send Request: Error: Unhandled", extra=extra_unhandled)
 
-            raise RequestModuleError(**kwargs)
+            raise TuneRequestModuleError(**kwargs)
 
     def validate_response(self, response, request_label=None):
         """Validate response
@@ -1062,10 +1059,10 @@ class RequestMvIntegration(object):
         if not response:
             self.logger.error("Validate Response: Failed: None", extra=response_extra)
 
-            raise RequestModuleError(
+            raise TuneRequestModuleError(
                 error_message="Validate Response: Failed: None",
                 error_request_curl=self.built_request_curl,
-                error_code=RequestErrorCode.MOD_ERR_SOFTWARE
+                error_code=TuneRequestErrorCodes.REQ_ERR_SOFTWARE
             )
         else:
             self.logger.debug("Validate Response: Defined", extra=response_extra)
@@ -1100,10 +1097,10 @@ class RequestMvIntegration(object):
         if not is_http_status_successful(http_status_code=response.status_code):
             self.logger.error("Validate Response: Failed", extra=response_extra)
 
-            raise RequestModuleError(
+            raise TuneRequestModuleError(
                 error_message="Validate Request: Failed",
                 error_request_curl=self.built_request_curl,
-                error_code=RequestErrorCode.MOD_ERR_SOFTWARE
+                error_code=TuneRequestErrorCodes.REQ_ERR_SOFTWARE
             )
         else:
             self.logger.debug("Validate Response: Success", extra=response_extra)
@@ -1152,34 +1149,34 @@ class RequestMvIntegration(object):
                             response=response
                         )
                 except Exception as ex:
-                    raise RequestModuleError(
+                    raise TuneRequestModuleError(
                         error_message=request_label,
                         errors=ex,
                         error_request_curl=self.built_request_curl,
-                        error_code=RequestErrorCode.MOD_ERR_UNEXPECTED_CONTENT_TYPE_RETURNED
+                        error_code=TuneRequestErrorCodes.REQ_ERR_UNEXPECTED_CONTENT_TYPE_RETURNED
                     )
 
-                raise RequestModuleError(
+                raise TuneRequestModuleError(
                     error_message="Unexpected 'Content-Type': '{}', Expected: '{}'".format(
                         response_content_type, response_content_type_expected
                     ),
                     errors=response_content_html_lines,
                     error_request_curl=self.built_request_curl,
-                    error_code=RequestErrorCode.MOD_ERR_UNEXPECTED_CONTENT_TYPE_RETURNED
+                    error_code=TuneRequestErrorCodes.REQ_ERR_UNEXPECTED_CONTENT_TYPE_RETURNED
                 )
             else:
-                raise RequestModuleError(
+                raise TuneRequestModuleError(
                     error_message="Unexpected 'Content-Type': '{}', Expected: '{}'".format(
                         response_content_type, response_content_type_expected
                     ),
                     error_request_curl=self.built_request_curl,
-                    error_code=RequestErrorCode.MOD_ERR_UNEXPECTED_CONTENT_TYPE_RETURNED
+                    error_code=TuneRequestErrorCodes.REQ_ERR_UNEXPECTED_CONTENT_TYPE_RETURNED
                 )
         else:
-            raise RequestModuleError(
+            raise TuneRequestModuleError(
                 error_message="Undefined 'Content-Type'",
                 error_request_curl=self.built_request_curl,
-                error_code=RequestErrorCode.MOD_ERR_UNEXPECTED_CONTENT_TYPE_RETURNED
+                error_code=TuneRequestErrorCodes.REQ_ERR_UNEXPECTED_CONTENT_TYPE_RETURNED
             )
 
         response_extra.update({
@@ -1248,10 +1245,10 @@ class RequestMvIntegration(object):
             if raise_ex_if_not_json_response:
                 self.logger.error("Validate JSON Response: Failed: None", extra=response_extra)
 
-                raise RequestModuleError(
+                raise TuneRequestModuleError(
                     error_message="Validate JSON Response: Failed: None",
                     error_request_curl=self.built_request_curl,
-                    error_code=RequestErrorCode.MOD_ERR_SOFTWARE
+                    error_code=TuneRequestErrorCodes.REQ_ERR_SOFTWARE
                 )
             else:
                 self.logger.warning("Validate JSON Response: None", extra=response_extra)
@@ -1409,9 +1406,9 @@ class RequestMvIntegration(object):
 
         self.logger.error("Validate JSON Response: Failed: Invalid", extra=response_extra)
 
-        raise RequestModuleError(
+        raise TuneRequestModuleError(
             error_message="Validate JSON Response: Failed: Invalid",
             errors=response_decode_ex,
             error_request_curl=request_curl,
-            error_code=RequestErrorCode.MOD_ERR_SOFTWARE
+            error_code=TuneRequestErrorCodes.REQ_ERR_SOFTWARE
         )

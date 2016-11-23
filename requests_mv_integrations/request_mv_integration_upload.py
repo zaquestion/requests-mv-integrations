@@ -2,21 +2,21 @@
 # -*- coding: utf-8 -*-
 #  @copyright 2016 TUNE, Inc. (http://www.tune.com)
 #  @namespace requests_mv_integrations
-"""
-TUNE Multiverse Request
-=======================
-"""
 
 import logging
+
 import requests
+from logging_mv_integrations import (TuneLoggingFormat)
+
+from requests_mv_integrations import (__python_required_version__)
 from requests_mv_integrations.errors import (
     get_exception_message,
     print_traceback,
-    RequestErrorCode,
+    TuneRequestErrorCodes,
 )
-from requests_mv_integrations.errors.exceptions import (
-    RequestBaseError,
-    RequestModuleError,
+from requests_mv_integrations.exceptions.custom import (
+    TuneRequestBaseError,
+    TuneRequestModuleError,
 )
 from requests_mv_integrations.support import (
     base_class_name,
@@ -24,16 +24,14 @@ from requests_mv_integrations.support import (
     REQUEST_RETRY_EXCPS,
     REQUEST_RETRY_HTTP_STATUS_CODES,
 )
-from requests_mv_integrations import (__python_required_version__)
 from .request_mv_integration import (RequestMvIntegration)
-from logging_mv_integrations import (TuneLoggingFormat)
 
 log = logging.getLogger(__name__)
 
 python_check_version(__python_required_version__)
 
 
-class RequestMvIntegrationUpload(object):
+class RequestMvIntegrationUpload(RequestMvIntegration):
 
     __mv_request = None
 
@@ -42,18 +40,10 @@ class RequestMvIntegrationUpload(object):
         logger_level=logging.INFO,
         logger_format=TuneLoggingFormat.JSON,
     ):
-        self.mv_request = RequestMvIntegration(logger_format=logger_format, logger_level=logger_level)
-
-    @property
-    def mv_request(self):
-        return self.__mv_request
-
-    @mv_request.setter
-    def mv_request(self, value):
-        self.__mv_request = value
-
-    def request(self, **kwargs):
-        return self.mv_request.request(**kwargs)
+        super(RequestMvIntegrationUpload, self).__init__(
+            logger_level=logger_level,
+            logger_format=logger_format
+        )
 
     def request_upload_json_file(
         self,
@@ -116,7 +106,7 @@ class RequestMvIntegrationUpload(object):
                     build_request_curl=False,
                     request_label="{}: Request Upload".format(request_label)
                 )
-        except RequestBaseError as tmv_ex:
+        except TuneRequestBaseError as tmv_ex:
 
             tmv_ex_extra = tmv_ex.to_dict()
             tmv_ex_extra.update({'error_exception': base_class_name(tmv_ex)})
@@ -134,12 +124,12 @@ class RequestMvIntegrationUpload(object):
 
             print_traceback(ex)
 
-            raise RequestModuleError(
+            raise TuneRequestModuleError(
                 error_message=("Request Upload: Failed: Unexpected: {}: {}").format(
                     base_class_name(ex), get_exception_message(ex)
                 ),
                 errors=ex,
-                error_code=RequestErrorCode.MOD_ERR_UPLOAD_DATA
+                error_code=TuneRequestErrorCodes.REQ_ERR_UPLOAD_DATA
             )
 
         return response
@@ -188,7 +178,7 @@ class RequestMvIntegrationUpload(object):
                 build_request_curl=False,
                 request_label="Upload Data to URL"
             )
-        except RequestBaseError as tmv_ex:
+        except TuneRequestBaseError as tmv_ex:
             tmv_ex_extra = tmv_ex.to_dict()
             tmv_ex_extra.update({'error_exception': base_class_name(tmv_ex)})
 
@@ -203,10 +193,10 @@ class RequestMvIntegrationUpload(object):
                 extra={'error_exception': base_class_name(ex),
                        'error_details': get_exception_message(ex)}
             )
-            raise RequestModuleError(
+            raise TuneRequestModuleError(
                 error_message=("RequestMvIntegration: Failed: {}").format(get_exception_message(ex)),
                 errors=ex,
-                error_code=RequestErrorCode.MOD_ERR_UPLOAD_DATA
+                error_code=TuneRequestErrorCodes.REQ_ERR_UPLOAD_DATA
             )
 
         return response
@@ -223,7 +213,7 @@ class RequestMvIntegrationUpload(object):
         error_exception = base_class_name(excp)
         error_details = get_exception_message(excp)
 
-        if isinstance(excp, RequestBaseError):
+        if isinstance(excp, TuneRequestBaseError):
             self.logger.debug(
                 "Request Retry: Upload Exception Func",
                 extra={
@@ -242,8 +232,8 @@ class RequestMvIntegrationUpload(object):
                 }
             )
 
-        if isinstance(excp, RequestBaseError) and \
-                excp.error_code == RequestErrorCode.MOD_ERR_REQUEST_CONNECT:
+        if isinstance(excp, TuneRequestBaseError) and \
+                excp.error_code == TuneRequestErrorCodes.REQ_ERR_REQUEST_CONNECT:
             if error_details.find('RemoteDisconnected') >= 0 or \
                     error_details.find('ConnectionResetError') >= 0:
                 self.logger.debug(

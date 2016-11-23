@@ -7,21 +7,24 @@ TUNE Multiverse Request
 =======================
 """
 
-import logging
 import csv
 import datetime as dt
 import gzip
 import http.client as http_client
 import io
 import json
+import logging
 import os
 import re
 import time
+
 import requests
+from logging_mv_integrations import (TuneLoggingFormat)
 from pprintpp import pprint
+
 from requests_mv_integrations import (__python_required_version__)
-from requests_mv_integrations.errors import (get_exception_message, print_traceback, RequestErrorCode)
-from requests_mv_integrations.errors.exceptions import (RequestModuleError,)
+from requests_mv_integrations.errors import (get_exception_message, TuneRequestErrorCodes)
+from requests_mv_integrations.exceptions.custom import (TuneRequestModuleError,)
 from requests_mv_integrations.support import (
     convert_size,
     detect_bom,
@@ -31,13 +34,13 @@ from requests_mv_integrations.support import (
     safe_dict,
 )
 from .request_mv_integration import (RequestMvIntegration)
-from logging_mv_integrations import (TuneLoggingFormat)
+
 log = logging.getLogger(__name__)
 
 python_check_version(__python_required_version__)
 
 
-class RequestMvIntegrationDownload(object):
+class RequestMvIntegrationDownload(RequestMvIntegration):
 
     __mv_request = None
 
@@ -46,18 +49,10 @@ class RequestMvIntegrationDownload(object):
         logger_level=logging.INFO,
         logger_format=TuneLoggingFormat.JSON,
     ):
-        self.mv_request = RequestMvIntegration(logger_format=logger_format, logger_level=logger_level)
-
-    @property
-    def mv_request(self):
-        return self.__mv_request
-
-    @mv_request.setter
-    def mv_request(self, value):
-        self.__mv_request = value
-
-    def request(self, **kwargs):
-        return self.mv_request.request(**kwargs)
+        super(RequestMvIntegrationDownload, self).__init__(
+            logger_level=logger_level,
+            logger_format=logger_format
+        )
 
     def request_csv_download(
         self,
@@ -178,8 +173,8 @@ class RequestMvIntegrationDownload(object):
                            'request_label': request_label}
                 )
 
-                raise RequestModuleError(
-                    error_message="Request CSV Download: No response", error_code=RequestErrorCode.MOD_ERR_REQUEST
+                raise TuneRequestModuleError(
+                    error_message="Request CSV Download: No response", error_code=TuneRequestErrorCodes.REQ_ERR_REQUEST
                 )
 
             http_status_code = response.status_code
@@ -229,9 +224,9 @@ class RequestMvIntegrationDownload(object):
                            'request_label': request_label}
                 )
 
-                raise RequestModuleError(
+                raise TuneRequestModuleError(
                     error_message="Request CSV Download: Exhausted Retries",
-                    error_code=RequestErrorCode.MOD_ERR_RETRY_EXHAUSTED
+                    error_code=TuneRequestErrorCodes.REQ_ERR_RETRY_EXHAUSTED
                 )
 
             log.info(
@@ -393,8 +388,9 @@ class RequestMvIntegrationDownload(object):
                            'request_label': request_label}
                 )
 
-                raise RequestModuleError(
-                    error_message="Request JSON Download: No response", error_code=RequestErrorCode.MOD_ERR_REQUEST
+                raise TuneRequestModuleError(
+                    error_message="Request JSON Download: No response",
+                    error_code=TuneRequestErrorCodes.REQ_ERR_REQUEST
                 )
 
             http_status_code = response.status_code
@@ -549,12 +545,12 @@ class RequestMvIntegrationDownload(object):
                                'request_label': request_label}
                     )
 
-                    raise RequestModuleError(
+                    raise TuneRequestModuleError(
                         error_message=("Request JSON Download: Exhausted Retries: {}: {}").format(
                             request_label, request_url
                         ),
                         error_request_curl=self.built_request_curl,
-                        error_code=RequestErrorCode.MOD_ERR_RETRY_EXHAUSTED
+                        error_code=TuneRequestErrorCodes.REQ_ERR_RETRY_EXHAUSTED
                     )
 
                 log.info(
@@ -915,9 +911,9 @@ class RequestMvIntegrationDownload(object):
                             'csv_values_list': csv_values_list,
                         }
                     )
-                    raise RequestModuleError(
+                    raise TuneRequestModuleError(
                         error_message="Mismatch: CSV Key '{}': Values '{}'".format(csv_keys_str, csv_values_str),
-                        error_code=RequestErrorCode.MOD_ERR_UNEXPECTED_VALUE
+                        error_code=TuneRequestErrorCodes.REQ_ERR_UNEXPECTED_VALUE
                     )
 
                 json_data_row = {}
@@ -1005,11 +1001,11 @@ class RequestMvIntegrationDownload(object):
                                     'csv_values_list': csv_values_list,
                                 }
                             )
-                            raise RequestModuleError(
+                            raise TuneRequestModuleError(
                                 error_message="Mismatch: CSV Key '{}': Values '{}'".format(
                                     csv_keys_str, csv_values_str
                                 ),
-                                error_code=RequestErrorCode.MOD_ERR_UNEXPECTED_VALUE
+                                error_code=TuneRequestErrorCodes.REQ_ERR_UNEXPECTED_VALUE
                             )
 
                         json_dict = {}
