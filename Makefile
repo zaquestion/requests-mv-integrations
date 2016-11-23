@@ -12,7 +12,7 @@ PACKAGE_PREFIX := requests_mv_integrations
 PYTHON3 := $(shell which python3)
 PIP3    := $(shell which pip3)
 
-PY_MODULES := pip setuptools pylint flake8 pprintpp pep8 requests six sphinx wheel retry validators python-dateutil
+PY_MODULES := pip setuptools pylint flake8 pprintpp pep8 requests six sphinx wheel python-dateutil
 PYTHON3_SITE_PACKAGES := $(shell python3 -c "import site; print(site.getsitepackages()[0])")
 
 PACKAGE_SUFFIX := py3-none-any.whl
@@ -25,6 +25,7 @@ WHEEL_ARCHIVE := dist/$(PACKAGE_PREFIX)-$(VERSION)-$(PACKAGE_SUFFIX)
 
 PACKAGE_FILES := $(shell find $(PACKAGE_PREFIX) examples ! -name '__init__.py' -type f -name "*.py")
 PACKAGE_ALL_FILES := $(shell find $(PACKAGE_PREFIX) examples -type f -name "*.py")
+
 TOOLS_REQ_FILE := requirements-tools.txt
 REQ_FILE      := requirements.txt
 SETUP_FILE    := setup.py
@@ -166,14 +167,12 @@ pep8: tools-requirements
 	@echo "======================================================"
 	@echo pep8 $(PACKAGE)
 	@echo "======================================================"
-	@echo pep8: $(REQUESTS_MV_INTGS_FILES)
-	$(PYTHON3) -m pep8 --config .pep8 $(REQUESTS_MV_INTGS_FILES)
+	$(PYTHON3) -m pep8 --config .pep8 $(PACKAGE_FILES)
 
 pyflakes: tools-requirements
 	@echo "======================================================"
 	@echo pyflakes $(PACKAGE)
 	@echo "======================================================"
-	@echo pyflakes: $(PACKAGE_FILES)
 	$(PIP3) install --upgrade pyflakes
 	$(PYTHON3) -m pyflakes $(PACKAGE_FILES)
 
@@ -181,7 +180,6 @@ pylint: tools-requirements
 	@echo "======================================================"
 	@echo pylint $(PACKAGE)
 	@echo "======================================================"
-	@echo pylint: $(PACKAGE_FILES)
 	$(PIP3) install --upgrade pylint
 	$(PYTHON3) -m pylint --rcfile .pylintrc $(PACKAGE_FILES) --disable=C0330,F0401,E0611,E0602,R0903,C0103,E1121,R0913,R0902,R0914,R0912,W1202,R0915,C0302 | more -30
 

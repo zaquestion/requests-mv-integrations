@@ -3,9 +3,7 @@
 #  @copyright 2016 TUNE, Inc. (http://www.tune.com)
 #  @namespace tune_mv_integration
 
-import base64
 import codecs
-import six
 
 # from pprintpp import pprint
 

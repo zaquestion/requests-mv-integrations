@@ -3,11 +3,10 @@
 #  @copyright 2016 TUNE, Inc. (http://www.tune.com)
 #  @namespace requests_mv_integrations
 
-import copy
 import re
 import json
 import urllib.parse
-from .constants import (HEADER_CONTENT_TYPE_APP_JSON, __USER_AGENT__)
+from .constants import (__USER_AGENT__)
 
 
 def command_line_request_curl(

@@ -1,3 +1,12 @@
-pprintpp>=0.2.3
-wheel>=0.29.0
+beautifulsoup4>=4.5.1
+DateTime>=4.1.1
+grequests>=0.3.0
 logging-mv-integrations>=0.0.1
+pprintpp>=0.2.3
+pyhttpstatus-utils>=0.1.0
+python-dateutil>=2.5.3
+requests-toolbelt>=0.7.0
+requests==2.11.1
+six>=1.10.0
+wheel>=0.29.0
+xmltodict>=0.10.2
