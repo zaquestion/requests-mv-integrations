@@ -39,6 +39,7 @@ from .response import (
     build_response_error_details,
     handle_json_decode_error,
 )
+from .tune_request import (TuneRequest)
 from .singleton import (Singleton)
 from .utils import (
     base_class_name,

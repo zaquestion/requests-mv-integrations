@@ -36,7 +36,11 @@ from requests_mv_integrations import (
     __python_required_version__,
     __version__,
 )
-from requests_mv_integrations.errors import (get_exception_message, print_traceback, TuneRequestErrorCodes)
+from requests_mv_integrations.errors import (
+    get_exception_message,
+    print_traceback,
+    TuneRequestErrorCodes,
+)
 from requests_mv_integrations.exceptions import (
     TuneRequestBaseError,
     TuneRequestClientError,
@@ -45,6 +49,7 @@ from requests_mv_integrations.exceptions import (
     TuneRequestValueError,
 )
 from requests_mv_integrations.support import (
+    build_response_error_details,
     command_line_request_curl,
     convert_size,
     base_class_name,
@@ -122,9 +127,18 @@ class RequestMvIntegration(object):
         self,
         logger_level=logging.INFO,
         logger_format=TuneLoggingFormat.JSON,
+        tune_request=None,
     ):
         self.logger_level = logger_level
         self.logger_format = logger_format
+
+        self.tune_request = tune_request
+        if not self.tune_request:
+            self.tune_request = TuneRequest(
+                retry_tries=self.retry_tries,
+                retry_backoff=self.retry_backoff,
+                retry_codes=self.request_retry_http_status_codes
+            )
 
         self._requests_logger()
 
@@ -597,6 +611,8 @@ class RequestMvIntegration(object):
                     'request_label': request_label
                 })
 
+                if not request_retry_excps_func:
+                    request_retry_excps_func = self.request_retry_excps_func
                 if not request_retry_excps_func or \
                         not request_retry_excps_func(tmv_ex, request_label):
                     self.logger.error(
@@ -732,12 +748,6 @@ class RequestMvIntegration(object):
             requests.Response
 
         """
-        if not self.tune_request:
-            self.tune_request = TuneRequest(
-                retry_tries=self.retry_tries,
-                retry_backoff=self.retry_backoff,
-                retry_codes=self.request_retry_http_status_codes
-            )
 
         if not request_method:
             raise TuneRequestValueError(error_message="Parameter 'request_method' not defined")
@@ -922,7 +932,7 @@ class RequestMvIntegration(object):
             )
             raise
 
-        if not response:
+        if response is None:
             self.logger.error("Failed to get response", extra={'request_curl': self.built_request_curl})
             raise TuneRequestModuleError(
                 error_message="Failed to get response",
@@ -977,7 +987,7 @@ class RequestMvIntegration(object):
             self.logger.error("Send Request: Response: Failed", extra=response_extra)
 
             json_response_error = \
-                self.build_response_error_details(
+                build_response_error_details(
                     response=response,
                     request_label=request_label,
                     request_url=request_url
