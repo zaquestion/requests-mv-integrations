@@ -19,6 +19,14 @@ class TuneRequestModuleError(TuneRequestBaseError):
     pass
 
 
+class TuneRequestClientGoneError(TuneRequestModuleError):
+    """Request Mv Integration: Value error"""
+
+    def __init__(self, **kwargs):
+        error_code = kwargs.pop('error_code', None) or \
+            TuneRequestErrorCodes.GONE
+        super(TuneRequestClientGoneError, self).__init__(error_code=error_code, **kwargs)
+
 class TuneRequestValueError(TuneRequestModuleError):
     """Request Mv Integration: Value error"""
 

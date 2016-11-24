@@ -46,10 +46,12 @@ class RequestMvIntegrationDownload(object):
         self,
         logger_level=logging.INFO,
         logger_format=TuneLoggingFormat.JSON,
+        tune_request=None,
     ):
         self.mv_request = RequestMvIntegration(
             logger_format=logger_format,
             logger_level=logger_level,
+            tune_request=tune_request,
         )
 
     @property
@@ -82,12 +84,10 @@ class RequestMvIntegrationDownload(object):
         request_retry_excps_func=None,
         request_headers=None,
         request_auth=None,
-        request_session=False,
         request_label=None,
         build_request_curl=True,
         allow_redirects=True,
         verify=True,
-        verbose=False,
         skip_first_row=False,
         skip_last_row=False,
         read_first_row=False,
@@ -117,7 +117,6 @@ class RequestMvIntegrationDownload(object):
                 POST/PUT/DELETE redirect following is allowed.
             verify: (optional) whether the SSL cert will be verified. A
                 CA_BUNDLE path can also be provided. Defaults to ``True``.
-            verbose: (optional) Boolean, provide request and response details.
             skip_first_row: (optional) Skip first row if it does not contain
                 column headers.
             skip_last_row: (optional) Skip first row if it does not contain
@@ -170,12 +169,10 @@ class RequestMvIntegrationDownload(object):
                 request_retry_excps_func=request_retry_excps_func,
                 request_headers=request_headers,
                 request_auth=request_auth,
-                request_session=request_session,
                 build_request_curl=build_request_curl,
                 allow_redirects=allow_redirects,
                 verify=verify,
                 stream=True,
-                verbose=verbose,
                 request_label=request_label
             )
 
@@ -308,12 +305,10 @@ class RequestMvIntegrationDownload(object):
         request_retry_excps_func=None,
         request_headers=None,
         request_auth=None,
-        request_session=False,
         request_label=None,
         build_request_curl=False,
         allow_redirects=True,
         verify=True,
-        verbose=False,
         encoding_write=None,
         encoding_read=None
     ):
@@ -339,7 +334,6 @@ class RequestMvIntegrationDownload(object):
                 POST/PUT/DELETE redirect following is allowed.
             verify: (optional) whether the SSL cert will be verified. A
                 CA_BUNDLE path can also be provided. Defaults to ``True``.
-            verbose: (optional) Boolean, provide request and response details.
             encoding_write:
             encoding_read:
             decode_unicode:
@@ -385,12 +379,10 @@ class RequestMvIntegrationDownload(object):
                 request_retry_excps_func=request_retry_excps_func,
                 request_headers=request_headers,
                 request_auth=request_auth,
-                request_session=request_session,
                 build_request_curl=build_request_curl,
                 allow_redirects=allow_redirects,
                 verify=verify,
                 stream=True,
-                verbose=verbose,
                 request_label=request_label
             )
 
@@ -844,7 +836,6 @@ class RequestMvIntegrationDownload(object):
             request_params=request_params,
             request_retry=request_retry,
             request_headers=request_headers,
-            verbose=False,
             stream=True,
             request_label="Stream CSV"
         )
