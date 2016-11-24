@@ -123,23 +123,11 @@ class RequestMvIntegration(object):
     def tune_request(self, value):
         self.__tune_request = value
 
-    def __init__(
-        self,
-        logger_level=logging.INFO,
-        logger_format=TuneLoggingFormat.JSON,
-        tune_request=None,
-    ):
+    def __init__(self, logger_level=logging.INFO, logger_format=TuneLoggingFormat.JSON, tune_request=None):
         self.logger_level = logger_level
         self.logger_format = logger_format
 
         self.tune_request = tune_request
-        if not self.tune_request:
-            self.tune_request = TuneRequest(
-                retry_tries=self.retry_tries,
-                retry_backoff=self.retry_backoff,
-                retry_codes=self.request_retry_http_status_codes
-            )
-
         self._requests_logger()
 
     def _requests_logger(self):
@@ -158,6 +146,25 @@ class RequestMvIntegration(object):
             requests_logger.addHandler(tune_loggin_handler.log_handler)
             requests_logger.propagate = True
             requests_logger.setLevel(level=request_logger_level)
+
+    def _prep_request_retry(self, request_retry=None, request_retry_http_status_codes=None):
+        self.timeout = self._REQUEST_CONFIG['timeout']
+        self.retry_tries = self._REQUEST_CONFIG['tries']
+        self.retry_delay = self._REQUEST_CONFIG['delay']
+        self.retry_max_delay = None
+        self.retry_backoff = 0
+        self.retry_jitter = 0
+
+        if request_retry:
+            self.timeout = request_retry.get('timeout', self._REQUEST_CONFIG['timeout'])
+            self.retry_tries = request_retry.get('tries', self._REQUEST_CONFIG['tries'])
+            self.retry_delay = request_retry.get('delay', self._REQUEST_CONFIG['delay'])
+            self.retry_max_delay = request_retry.get('max_delay', None)
+            self.retry_backoff = request_retry.get('backoff', 0)
+            self.retry_jitter = request_retry.get('jitter', 0)
+
+        self.request_retry_http_status_codes = \
+            request_retry_http_status_codes or REQUEST_RETRY_HTTP_STATUS_CODES
 
     def request(
         self,
@@ -249,18 +256,14 @@ class RequestMvIntegration(object):
         if 'delay' not in request_retry:
             request_retry['delay'] = self._REQUEST_CONFIG['delay']
 
-        if 'timeout' in request_retry:
-            timeout = request_retry['timeout']
-        if 'tries' in request_retry:
-            retry_tries = request_retry['tries']
-        if 'delay' in request_retry:
-            retry_delay = request_retry['delay']
-        if 'max_delay' in request_retry:
-            retry_max_delay = request_retry['max_delay']
-        if 'backoff' in request_retry:
-            retry_backoff = request_retry['backoff']
-        if 'jitter' in request_retry:
-            retry_jitter = request_retry['jitter']
+        self._prep_request_retry(request_retry, request_retry_http_status_codes)
+
+        if not self.tune_request:
+            self.tune_request = TuneRequest(
+                retry_tries=self.retry_tries,
+                retry_backoff=self.retry_backoff,
+                retry_codes=self.request_retry_http_status_codes
+            )
 
         logger_extra = {
             'request_method': request_method,
@@ -346,11 +349,6 @@ class RequestMvIntegration(object):
                 timeout=timeout,
                 request_retry_func=request_retry_func,
                 request_retry_excps_func=request_retry_excps_func,
-                retry_tries=retry_tries,
-                retry_delay=retry_delay,
-                retry_max_delay=retry_max_delay,
-                retry_backoff=retry_backoff,
-                retry_jitter=retry_jitter,
                 request_label=request_label
             )
 
@@ -463,11 +461,6 @@ class RequestMvIntegration(object):
         timeout=60,
         request_retry_func=None,
         request_retry_excps_func=None,
-        retry_tries=-1,  # default: -1 (indefinite)
-        retry_delay=0,
-        retry_max_delay=None,
-        retry_backoff=0,
-        retry_jitter=0,
         request_label=None
     ):
         """Request Retry
@@ -523,10 +516,7 @@ class RequestMvIntegration(object):
 
         _attempts = 0
 
-        self.retry_tries = retry_tries
-        self.retry_backoff = retry_backoff
-
-        _tries, _delay, _timeout = retry_tries, retry_delay, timeout
+        _tries, _delay, _timeout = self.retry_tries, self.retry_backoff, self.timeout
         while _tries:
             _attempts += 1
 
@@ -692,14 +682,14 @@ class RequestMvIntegration(object):
 
             time.sleep(_delay)
 
-            if retry_backoff and retry_backoff > 0:
-                _delay *= retry_backoff
+            if self.retry_backoff and self.retry_backoff > 0:
+                _delay *= self.retry_backoff
 
-            if retry_jitter and retry_jitter > 0:
-                _delay += retry_jitter
+            if self.retry_jitter and self.retry_jitter > 0:
+                _delay += self.retry_jitter
 
-            if retry_max_delay is not None:
-                _delay = min(_delay, retry_max_delay)
+            if self.retry_max_delay is not None:
+                _delay = min(_delay, self.retry_max_delay)
 
     # Request Data
     #
