@@ -55,6 +55,14 @@ class RequestMvIntegrationDownload(object):
         )
 
     @property
+    def session(self):
+        return self.mv_request.session
+
+    @property
+    def tune_request(self):
+        return self.mv_request.tune_request
+
+    @property
     def mv_request(self):
         return self.__mv_request
 

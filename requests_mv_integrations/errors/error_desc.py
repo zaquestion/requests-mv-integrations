@@ -50,7 +50,7 @@ tune_reporting_error_descs = {
 }
 
 
-def error_name(error_code):
+def error_name(error_code, return_bool=False):
     """Provide definition of Error Code
 
     Args:
@@ -70,10 +70,10 @@ def error_name(error_code):
     if exit_code_name_ is not None:
         return exit_code_name_
 
-    return "Error Code: Undefined: {}".format(error_code)
+    return False if return_bool else "Error Code: Undefined: {}".format(error_code)
 
 
-def error_desc(error_code):
+def error_desc(error_code, return_bool=False):
     """Provide definition of Error Code
 
     Args:
@@ -93,4 +93,4 @@ def error_desc(error_code):
     if exit_code_description_ is not None:
         return exit_code_description_
 
-    return "Error Code: Undefined: {}".format(error_code)
+    return False if return_bool else "Error Code: Undefined: {}".format(error_code)
