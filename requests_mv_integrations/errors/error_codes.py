@@ -47,5 +47,6 @@ class TuneRequestErrorCodes(HttpStatusCode):
     REQ_ERR_AUTH_ERROR = 611  # Auth Error
     REQ_ERR_AUTH_JSON_ERROR = 612  # Auth JSON Error
     REQ_ERR_AUTH_RESP_ERROR = 613  # Auth Response Error
+    REQ_ERR_JSON_DECODING_ERROR = 614  # JSON Decoding Error
 
     REQ_ERR_UNEXPECTED = 699  # Unexpected Error

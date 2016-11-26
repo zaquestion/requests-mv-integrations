@@ -362,14 +362,14 @@ class RequestMvIntegration(object):
 
         time_start_req = dt.datetime.now()
 
-        if request_retry_func is not None:
-            self.request_retry_func = request_retry_func
+        if request_retry_func is None:
+            request_retry_func = self.request_retry_func
+
+        if request_retry_excps_func is None:
+            request_retry_excps_func = self.request_retry_excps_func
 
         if request_retry_http_status_codes is not None:
             self.request_retry_http_status_codes = request_retry_http_status_codes
-
-        if request_retry_excps_func is not None:
-            self.request_retry_excps_func = request_retry_excps_func
 
         if request_retry_excps is not None:
             self.request_retry_excps = request_retry_excps
@@ -394,7 +394,13 @@ class RequestMvIntegration(object):
 
         try:
             response = self._request_retry(
-                call_func=self._request, fargs=None, fkwargs=kwargs, timeout=timeout, request_label=request_label
+                call_func=self._request,
+                fargs=None,
+                fkwargs=kwargs,
+                timeout=timeout,
+                request_label=request_label,
+                request_retry_func=request_retry_func,
+                request_retry_excps_func=request_retry_excps_func
             )
 
         except (
@@ -498,7 +504,16 @@ class RequestMvIntegration(object):
 
         return response
 
-    def _request_retry(self, call_func, fargs=None, fkwargs=None, timeout=60, request_label=None):
+    def _request_retry(
+        self,
+        call_func,
+        fargs=None,
+        fkwargs=None,
+        timeout=60,
+        request_retry_func=None,
+        request_retry_excps_func=None,
+        request_label=None,
+    ):
         """Request Retry
 
         Args:
@@ -533,12 +548,12 @@ class RequestMvIntegration(object):
             request_retry_excp_names = [excp.__name__ for excp in list(self.request_retry_excps)]
             request_retry_extra.update({'request_retry_excps': request_retry_excp_names})
 
-        if self.request_retry_func is not None:
-            request_retry_func_name = self.request_retry_func.__name__
+        if request_retry_func is not None:
+            request_retry_func_name = request_retry_func.__name__
             request_retry_extra.update({'request_retry_func': request_retry_func_name})
 
-        if self.request_retry_excps_func is not None:
-            request_retry_excps_func_name = self.request_retry_excps_func.__name__
+        if request_retry_excps_func is not None:
+            request_retry_excps_func_name = request_retry_excps_func.__name__
             request_retry_extra.update({'request_retry_excps_func': request_retry_excps_func_name})
 
         self.logger.debug(
@@ -576,7 +591,7 @@ class RequestMvIntegration(object):
             try:
                 response = request_func()
 
-                if not response:
+                if response is None:
                     raise TuneRequestModuleError(
                         error_message="Request Retry: No response",
                         error_code=TuneRequestErrorCodes.REQ_ERR_UNEXPECTED_VALUE
@@ -588,8 +603,8 @@ class RequestMvIntegration(object):
                            'request_label': request_label}
                 )
 
-                if self.request_retry_func is not None:
-                    if not self.request_retry_func(response):
+                if request_retry_func is not None:
+                    if not request_retry_func(response):
                         self.logger.debug(
                             "Request Retry: Response: Valid: Not Retry Candidate",
                             extra={'request_url': request_url,

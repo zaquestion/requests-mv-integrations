@@ -11,6 +11,7 @@
 
 .sw*
 *.vim
+*.zip
 
 # Code build files
 *.egg-info/

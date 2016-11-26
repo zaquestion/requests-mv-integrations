@@ -3,8 +3,7 @@
 #  @copyright 2016 TUNE, Inc. (http://www.tune.com)
 #  @namespace requests_mv_integrations
 
-from .download import (
-    download_csv_transform_to_json,
+from .csv import (
     csv_skip_last_row,
 )
 from .parse import (
