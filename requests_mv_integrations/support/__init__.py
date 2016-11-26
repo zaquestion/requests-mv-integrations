@@ -29,7 +29,6 @@ from .safe_cast import (
     safe_str,
 )
 from .response import (
-    download_csv_transform_to_json,
     csv_skip_last_row,
     requests_response_text_html,
     requests_response_text_xml,

@@ -26,6 +26,7 @@ tune_reporting_error_names = {
     611: 'Auth Error',
     612: 'Auth JSON Error',
     613: 'Auth Response Error',
+    614: 'JSON Decoding Error',
     699: 'Unexpected Error'
 }
 
@@ -46,6 +47,7 @@ tune_reporting_error_descs = {
     611: 'Auth Error',
     612: 'Auth JSON Error',
     613: 'Auth Response Error',
+    614: 'JSON Decoding Error',
     699: 'Unexpected Error'
 }
 
