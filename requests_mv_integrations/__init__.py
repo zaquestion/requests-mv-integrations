@@ -4,7 +4,7 @@
 #  @namespace requests_mv_integrations
 
 __title__ = 'requests-mv-integrations'
-__version__ = '0.0.8'
+__version__ = '0.0.9'
 __build__ = 0x000008
 __version_info__ = tuple(__version__.split('.'))
 
