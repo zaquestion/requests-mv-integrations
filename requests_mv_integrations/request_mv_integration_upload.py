@@ -103,7 +103,7 @@ class RequestMvIntegrationUpload(object):
             'upload_request_headers': upload_request_headers
         }
 
-        self.logger.debug("Upload: Details", extra=upload_extra)
+        log.debug("Upload: Details", extra=upload_extra)
 
         try:
             with open(upload_data_file_path, 'rb') as upload_fp:
@@ -126,12 +126,12 @@ class RequestMvIntegrationUpload(object):
             tmv_ex_extra = tmv_ex.to_dict()
             tmv_ex_extra.update({'error_exception': base_class_name(tmv_ex)})
 
-            self.logger.error("Request Upload: Failed", extra=tmv_ex_extra)
+            log.error("Request Upload: Failed", extra=tmv_ex_extra)
 
             raise
 
         except Exception as ex:
-            self.logger.error(
+            log.error(
                 "Request Upload: Failed: Unexpected",
                 extra={'error_exception': base_class_name(ex),
                        'error_details': get_exception_message(ex)}
@@ -159,7 +159,7 @@ class RequestMvIntegrationUpload(object):
         Returns:
             requests.Response
         """
-        self.logger.info(
+        log.info(
             "Uploading Data", extra={'upload_data_size': upload_data_size,
                                      'upload_request_url': upload_request_url}
         )
@@ -197,13 +197,13 @@ class RequestMvIntegrationUpload(object):
             tmv_ex_extra = tmv_ex.to_dict()
             tmv_ex_extra.update({'error_exception': base_class_name(tmv_ex)})
 
-            self.logger.error("Upload: Failed", extra=tmv_ex_extra)
+            log.error("Upload: Failed", extra=tmv_ex_extra)
             raise
 
         except Exception as ex:
             print_traceback(ex)
 
-            self.logger.error(
+            log.error(
                 "Upload: Failed: Unexpected",
                 extra={'error_exception': base_class_name(ex),
                        'error_details': get_exception_message(ex)}
@@ -229,7 +229,7 @@ class RequestMvIntegrationUpload(object):
         error_details = get_exception_message(excp)
 
         if isinstance(excp, TuneRequestBaseError):
-            self.logger.debug(
+            log.debug(
                 "Request Retry: Upload Exception Func",
                 extra={
                     'request_label': request_label,
@@ -238,7 +238,7 @@ class RequestMvIntegrationUpload(object):
                 }
             )
         else:
-            self.logger.debug(
+            log.debug(
                 "Request Retry: Upload Exception Func: Unexpected",
                 extra={
                     'request_label': request_label,
@@ -251,7 +251,7 @@ class RequestMvIntegrationUpload(object):
                 excp.error_code == TuneRequestErrorCodes.REQ_ERR_REQUEST_CONNECT:
             if error_details.find('RemoteDisconnected') >= 0 or \
                     error_details.find('ConnectionResetError') >= 0:
-                self.logger.debug(
+                log.debug(
                     "Request Retry: Upload Exception Func: Retry",
                     extra={
                         'request_label': request_label,
@@ -264,7 +264,7 @@ class RequestMvIntegrationUpload(object):
         if isinstance(excp, requests.exceptions.ConnectionError):
             if error_details.find('RemoteDisconnected') >= 0 or \
                     error_details.find('ConnectionResetError') >= 0:
-                self.logger.debug(
+                log.debug(
                     "Request Retry: Upload Exception Func: Retry",
                     extra={
                         'request_label': request_label,
@@ -274,7 +274,7 @@ class RequestMvIntegrationUpload(object):
                 )
                 return True
 
-        self.logger.debug(
+        log.debug(
             "Request Retry: Upload Exception Func: Not Retry",
             extra={'request_label': request_label,
                    'error_exception': error_exception,
