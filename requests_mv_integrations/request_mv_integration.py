@@ -393,6 +393,7 @@ class RequestMvIntegration(object):
         )
 
         try:
+            self._prep_request_retry(request_retry, request_retry_http_status_codes)
             response = self._request_retry(
                 call_func=self._request,
                 fargs=None,
@@ -567,7 +568,7 @@ class RequestMvIntegration(object):
 
         _attempts = 0
 
-        _tries, _delay, _timeout = self.retry_tries, self.retry_backoff, self.timeout
+        _tries, _delay, _timeout = self.retry_tries, self.retry_delay, self.timeout
         while _tries:
             _attempts += 1
 
