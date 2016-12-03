@@ -3,7 +3,6 @@
 #  @copyright 2016 TUNE, Inc. (http://www.tune.com)
 #  @namespace requests_mv_integrations
 
-
 import logging
 import csv
 import datetime as dt

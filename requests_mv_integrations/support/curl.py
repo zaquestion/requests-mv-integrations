@@ -7,13 +7,43 @@ import re
 import json
 import urllib.parse
 from .constants import (__USER_AGENT__)
+from pprintpp import pprint
+from base64 import b64encode
+import requests
 
+def _to_native_string(string, encoding='ascii'):
+    """Given a string object, regardless of type, returns a representation of
+    that string in the native string type, encoding and decoding where
+    necessary. This assumes ASCII unless told otherwise.
+    """
+    if isinstance(string, str):
+        out = string
+    else:
+        out = string.decode(encoding)
+
+    return out
+
+def _basic_auth_str(username, password):
+    """Returns a Basic Auth string."""
+
+    if isinstance(username, str):
+        username = username.encode('latin1')
+
+    if isinstance(password, str):
+        password = password.encode('latin1')
+
+    authstr = 'Basic ' + _to_native_string(
+        b64encode(b':'.join((username, password))).strip()
+    )
+
+    return authstr
 
 def command_line_request_curl(
     request_method,
     request_url,
     request_headers,
     request_data=None,
+    request_auth=None,
     request_json=None,
     request_timeout=60,
     request_allow_redirects=True
@@ -33,6 +63,20 @@ def command_line_request_curl(
     """
     key_user_agent = 'User-Agent'
     header_user_agent = {key_user_agent: __USER_AGENT__}
+
+    if request_auth and isinstance(request_auth, requests.auth.HTTPBasicAuth):
+        username = request_auth.username
+        password = request_auth.password
+
+        header_basic_auth = {
+            'Authorization': _basic_auth_str(username, password)
+        }
+
+        if request_headers:
+            if 'Authorization' not in request_headers:
+                request_headers.update(header_basic_auth)
+        else:
+            request_headers = header_basic_auth
 
     if request_headers:
         if key_user_agent not in request_headers:
@@ -60,7 +104,11 @@ def command_line_request_curl(
             headers = " -H ".join(headers)
 
             return command.format(
-                request_method=request_method, headers=headers, params=params, timeout=request_timeout, url=request_url
+                request_method=request_method,
+                headers=headers,
+                params=params,
+                timeout=request_timeout,
+                url=request_url,
             )
         else:
             command += (" '{url}'")
@@ -69,7 +117,10 @@ def command_line_request_curl(
             headers = " -H ".join(headers)
 
             return command.format(
-                request_method=request_method, headers=headers, timeout=request_timeout, url=request_url
+                request_method=request_method,
+                headers=headers,
+                timeout=request_timeout,
+                url=request_url,
             )
 
     elif request_method == 'POST':
@@ -105,7 +156,10 @@ def command_line_request_curl(
             headers = ["'{0}: {1}'".format(k, v) for k, v in request_headers.items()]
             headers = " -H ".join(headers)
             return command.format(
-                request_method=request_method, headers=headers, timeout=request_timeout, url=request_url
+                request_method=request_method,
+                headers=headers,
+                timeout=request_timeout,
+                url=request_url,
             )
 
     elif request_method == 'PUT':
@@ -121,7 +175,11 @@ def command_line_request_curl(
             headers = " -H ".join(headers)
 
             return command.format(
-                request_method=request_method, headers=headers, data=row, timeout=request_timeout, url=request_url
+                request_method=request_method,
+                headers=headers,
+                data=row,
+                timeout=request_timeout,
+                url=request_url,
             )
         else:
             command += (" '{url}'")
@@ -129,5 +187,8 @@ def command_line_request_curl(
             headers = ["'{0}: {1}'".format(k, v) for k, v in request_headers.items()]
             headers = " -H ".join(headers)
             return command.format(
-                request_method=request_method, headers=headers, timeout=request_timeout, url=request_url
+                request_method=request_method,
+                headers=headers,
+                timeout=request_timeout,
+                url=request_url,
             )

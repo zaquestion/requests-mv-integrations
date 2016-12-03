@@ -17,6 +17,7 @@ from requests_mv_integrations.errors import (
 from requests_mv_integrations.exceptions.custom import (TuneRequestModuleError,)
 from requests_mv_integrations.support.utils import (base_class_name, python_check_version)
 
+
 def csv_skip_last_row(iterator):
     """Skip last CSV row.
 

@@ -3,9 +3,7 @@
 #  @copyright 2016 TUNE, Inc. (http://www.tune.com)
 #  @namespace requests_mv_integrations
 
-from .csv import (
-    csv_skip_last_row,
-)
+from .csv import (csv_skip_last_row,)
 from .parse import (
     requests_response_text_html,
     requests_response_text_xml,
