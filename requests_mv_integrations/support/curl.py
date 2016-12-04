@@ -7,9 +7,11 @@ import re
 import json
 import urllib.parse
 from .constants import (__USER_AGENT__)
-from pprintpp import pprint
 from base64 import b64encode
 import requests
+
+# from pprintpp import pprint
+
 
 def _to_native_string(string, encoding='ascii'):
     """Given a string object, regardless of type, returns a representation of
@@ -23,6 +25,7 @@ def _to_native_string(string, encoding='ascii'):
 
     return out
 
+
 def _basic_auth_str(username, password):
     """Returns a Basic Auth string."""
 
@@ -32,11 +35,10 @@ def _basic_auth_str(username, password):
     if isinstance(password, str):
         password = password.encode('latin1')
 
-    authstr = 'Basic ' + _to_native_string(
-        b64encode(b':'.join((username, password))).strip()
-    )
+    authstr = 'Basic ' + _to_native_string(b64encode(b':'.join((username, password))).strip())
 
     return authstr
+
 
 def command_line_request_curl(
     request_method,
@@ -68,9 +70,7 @@ def command_line_request_curl(
         username = request_auth.username
         password = request_auth.password
 
-        header_basic_auth = {
-            'Authorization': _basic_auth_str(username, password)
-        }
+        header_basic_auth = {'Authorization': _basic_auth_str(username, password)}
 
         if request_headers:
             if 'Authorization' not in request_headers:
