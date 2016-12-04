@@ -51,14 +51,10 @@ from requests_mv_integrations.exceptions import (
 from requests_mv_integrations.support import (
     build_response_error_details,
     command_line_request_curl,
-    convert_size,
     base_class_name,
     python_check_version,
-    requests_response_text_html,
     safe_dict,
-    safe_int,
     safe_str,
-    Singleton,
     REQUEST_RETRY_EXCPS,
     REQUEST_RETRY_HTTP_STATUS_CODES,
     __USER_AGENT__,
@@ -866,6 +862,7 @@ class RequestMvIntegration(object):
                         request_url=request_url,
                         request_headers=headers,
                         request_data=request_params_encoded,
+                        request_auth=request_auth,
                         request_timeout=timeout,
                         request_allow_redirects=allow_redirects
                     )
@@ -897,6 +894,7 @@ class RequestMvIntegration(object):
                         request_headers=headers,
                         request_data=request_data,
                         request_json=request_json,
+                        request_auth=request_auth,
                         request_timeout=timeout,
                         request_allow_redirects=allow_redirects
                     )
@@ -929,6 +927,7 @@ class RequestMvIntegration(object):
                         request_url=request_url,
                         request_headers=headers,
                         request_data=request_data,
+                        request_auth=request_auth,
                         request_timeout=timeout,
                         request_allow_redirects=allow_redirects
                     )
