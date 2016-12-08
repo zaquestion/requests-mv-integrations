@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #  @copyright 2016 TUNE, Inc. (http://www.tune.com)
-#  @namespace tune_mv_integration
+#  @namespace requests_mv_integrations
 
 import six
 from requests_mv_integrations.support import (safe_str)
@@ -12,7 +12,7 @@ from requests_mv_integrations.errors import (TuneRequestErrorCodes, error_desc, 
 
 # @brief TUNE Multiverse Error Base Class
 #
-# @namespace tune_mv_integration.TuneRequestBaseError
+# @namespace requests_mv_integrations.TuneRequestBaseError
 class TuneRequestBaseError(Exception):
     """TUNE Mv-Integration Exception.
     """
@@ -149,19 +149,19 @@ class TuneRequestBaseError(Exception):
                 error_message += ", "
             else:
                 error_message = ""
-            error_message += "Reason: '{error_reason}'".format(error_reason=self.error_reason)
+            error_message += "Error Reason: '{error_reason}'".format(error_reason=self.error_reason)
         if self.error_status:
             if error_message:
                 error_message += ", "
             else:
                 error_message = ""
-            error_message += "Status: {error_status}".format(error_status=self.error_status)
+            error_message += "Exit Status: {error_status}".format(error_status=self.error_status)
         if self.error_code:
             if error_message:
                 error_message += ", "
             else:
                 error_message = ""
-            error_message += "Code: {error_code}, Name: {error_name}".format(
+            error_message += "Exit Code: {error_code}, Exit Name: {error_name}".format(
                 error_code=self.error_code, error_name=error_name(self.error_code)
             )
         if self.error_details:
@@ -169,7 +169,7 @@ class TuneRequestBaseError(Exception):
                 error_message += ", "
             else:
                 error_message = ""
-            error_message += "Details: {error_details}".format(error_details=self.error_details)
+            error_message += "Error Details: {error_details}".format(error_details=self.error_details)
         if self.errors:
             if error_message:
                 error_message += ", "
@@ -183,9 +183,9 @@ class TuneRequestBaseError(Exception):
 
         dict_ = {
             'error_origin': self.error_origin,
-            'error_code': self.error_code,
-            'error_desc': error_desc(self.error_code),
-            'error_name': error_name(self.error_code)
+            'exit_code': self.error_code,
+            'exit_desc': error_desc(self.error_code),
+            'exit_name': error_name(self.error_code)
         }
 
         if self.error_message:
