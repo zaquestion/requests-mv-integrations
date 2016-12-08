@@ -233,3 +233,6 @@ docs-doxygen:
 
 run-examples:
 	$(PYTHON3) examples/example_request.py
+
+list:
+	cat Makefile | grep "^[a-z]" | awk '{print $$1}' | sed "s/://g" | sort
