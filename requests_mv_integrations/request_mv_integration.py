@@ -12,10 +12,7 @@ import time
 import urllib.parse
 from functools import partial
 
-import bs4
 import requests
-import requests_toolbelt
-import xmltodict
 from logging_mv_integrations import (
     TuneLoggingFormat,
     TuneLoggingHandler,

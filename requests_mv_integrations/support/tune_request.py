@@ -9,6 +9,7 @@ import requests
 from requests.adapters import (HTTPAdapter, DEFAULT_POOLSIZE)
 from requests.packages.urllib3.util.retry import Retry
 from requests_mv_integrations.support import (REQUEST_RETRY_HTTP_STATUS_CODES)
+from requests_mv_integrations.errors import (get_exception_message)
 from .singleton import (Singleton)
 
 log = getLogger(__name__)
@@ -46,9 +47,11 @@ class TuneRequest(metaclass=Singleton):
         self.__session = value
 
     def request(self, request_method, request_url, **kwargs):
-        response = self.session.request(method=request_method, url=request_url, **kwargs)
-
-        return response
+        try:
+            return self.session.request(method=request_method, url=request_url, **kwargs)
+        except Exception as ex:
+            log.error(get_exception_message(ex))
+            raise
 
     def request_safe(self, request_method, request_url, response_hook=None, exception_handler=None, **kwargs):
         response_hook, exception_handler = self.create_hooks(response_hook, exception_handler)
@@ -57,8 +60,9 @@ class TuneRequest(metaclass=Singleton):
             return self.session.request(
                 method=request_method, url=request_url, hooks={'response': response_hook}, **kwargs
             )
-        except Exception as e:
-            exception_handler(e)
+        except Exception as ex:
+            log.error(get_exception_message(ex))
+            exception_handler(ex)
             return None
 
     # def request_async(self, request_method, request_urls, response_hook=None, exception_handler=None, **kwargs):
