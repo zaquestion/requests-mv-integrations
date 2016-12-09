@@ -50,7 +50,13 @@ class TuneRequest(metaclass=Singleton):
         try:
             return self.session.request(method=request_method, url=request_url, **kwargs)
         except Exception as ex:
-            log.error(get_exception_message(ex))
+            log.warning(
+                "Session Request: Failed: {}".format(get_exception_message(ex)),
+                extra={
+                    'request_method': request_method,
+                    'request_url': request_url
+                }
+            )
             raise
 
     def request_safe(self, request_method, request_url, response_hook=None, exception_handler=None, **kwargs):
@@ -61,7 +67,13 @@ class TuneRequest(metaclass=Singleton):
                 method=request_method, url=request_url, hooks={'response': response_hook}, **kwargs
             )
         except Exception as ex:
-            log.error(get_exception_message(ex))
+            log.warning(
+                "Session Request: Failed: {}".format(get_exception_message(ex)),
+                extra={
+                    'request_method': request_method,
+                    'request_url': request_url
+                }
+            )
             exception_handler(ex)
             return None
 
