@@ -2,29 +2,36 @@
 # -*- coding: utf-8 -*-
 #  @copyright 2016 TUNE, Inc. (http://www.tune.com)
 #  @namespace requests_mv_integrations
+"""
+Tune Requests Error
+"""
 
 import six
-from requests_mv_integrations import (__title__)
-from requests_mv_integrations.support import (safe_str)
-from requests_mv_integrations.errors import (TuneRequestErrorCodes, error_desc, error_name)
 
 # from pprintpp import pprint
 
+from requests_mv_integrations import (__title__)
+from requests_mv_integrations.support import (safe_str)
 
-# @brief TUNE Multiverse Error Base Class
+from requests_mv_integrations.errors import (TuneRequestErrorCodes)
+
+from requests_mv_integrations.errors import error_desc as tune_request_error_desc
+from requests_mv_integrations.errors import error_name as tune_request_error_name
+
+
+# @brief TUNE Requests Base Exception
 #
 # @namespace requests_mv_integrations.TuneRequestBaseError
 class TuneRequestBaseError(Exception):
-    """TUNE Mv-Integration Exception.
+    """TUNE Requests Base Exception
     """
     __error_message = None
     __errors = None
-    __exit_code = TuneRequestErrorCodes.REQ_ERR_UNEXPECTED
-
+    __error_code = None
     __error_status = None
     __error_reason = None
     __error_details = None
-    __error_origin = __title__
+    __error_origin = None
     __error_request_curl = None
 
     def __init__(
@@ -38,13 +45,19 @@ class TuneRequestBaseError(Exception):
         error_origin=None,
         error_request_curl=None
     ):
+        self.__error_code = TuneRequestErrorCodes.REQ_ERR_UNEXPECTED
+        self.__error_origin = __title__
+
         if error_code is not None:
-            self.__exit_code = error_code
+            self.__error_code = error_code
 
         if error_origin is not None:
             self.__error_origin = error_origin
 
-        self.__error_message = self._error_message(error_message=error_message, error_code=self.error_code)
+        self.__error_message = TuneRequestBaseError._error_message(
+            error_message=error_message,
+            error_code=self.__error_code,
+        )
 
         # Call the base class constructor with the parameters it needs
         super(TuneRequestBaseError, self).__init__(self.error_message)
@@ -70,7 +83,7 @@ class TuneRequestBaseError(Exception):
     def error_code(self):
         """Get property of exit code.
         """
-        return self.__exit_code
+        return self.__error_code
 
     @property
     def error_reason(self):
@@ -111,7 +124,7 @@ class TuneRequestBaseError(Exception):
     @staticmethod
     def _error_message(error_message, error_code):
         error_message_ = None
-        exit_code_description_ = error_desc(error_code).rstrip('\.')
+        exit_code_description_ = tune_request_error_desc(error_code).rstrip('\.')
 
         error_message_prefix_ = "{}: {}".format(error_code, exit_code_description_)
 
@@ -123,18 +136,6 @@ class TuneRequestBaseError(Exception):
             error_message_ = error_message_prefix_
 
         return error_message_
-
-    @staticmethod
-    def _exit_code(error_code, exit_code_default):
-        """Prepare exit code.
-        """
-        exit_code_ = None
-        if error_code:
-            exit_code_ = int(error_code)
-        else:
-            exit_code_ = exit_code_default
-
-        return exit_code_
 
     def __str__(self):
         """Stringify
@@ -163,7 +164,7 @@ class TuneRequestBaseError(Exception):
             else:
                 error_message = ""
             error_message += "Exit Code: {error_code}, Exit Name: {error_name}".format(
-                error_code=self.error_code, error_name=error_name(self.error_code)
+                error_code=self.error_code, error_name=tune_request_error_name(self.error_code)
             )
         if self.error_details:
             if error_message:
@@ -185,8 +186,8 @@ class TuneRequestBaseError(Exception):
         dict_ = {
             'error_origin': self.error_origin,
             'exit_code': self.error_code,
-            'exit_desc': error_desc(self.error_code),
-            'exit_name': error_name(self.error_code)
+            'exit_desc': tune_request_error_desc(self.error_code),
+            'exit_name': tune_request_error_name(self.error_code)
         }
 
         if self.error_message:

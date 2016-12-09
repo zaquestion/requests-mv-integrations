@@ -7,6 +7,10 @@ from requests_mv_integrations.errors.error_codes import TuneRequestErrorCodes
 from requests_mv_integrations.exceptions.base import (TuneRequestBaseError)
 
 
+class TuneRequestError(TuneRequestBaseError):
+    pass
+
+
 class TuneRequestClientError(TuneRequestBaseError):
     pass
 
