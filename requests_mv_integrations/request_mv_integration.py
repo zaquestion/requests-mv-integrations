@@ -649,8 +649,13 @@ class RequestMvIntegration(object):
                     'request_label': request_label
                 })
 
+                self.logger.warning(
+                    "Request Retry: Failed: {}".format(get_exception_message(error_exception)), extra=tmv_ex.to_dict()
+                )
+
                 if not self.request_retry_excps_func or \
                         not self.request_retry_excps_func(tmv_ex, request_label):
+                    tmv_ex_extra.update({'request_retry_excps_func': self.request_retry_excps_func})
                     self.logger.error(
                         "Request Retry: Integration: {}: Not Retry Candidate".format(base_class_name(error_exception)),
                         extra=tmv_ex_extra
