@@ -4,6 +4,7 @@
 #  @namespace requests_mv_integrations
 
 import six
+from requests_mv_integrations import (__title__)
 from requests_mv_integrations.support import (safe_str)
 from requests_mv_integrations.errors import (TuneRequestErrorCodes, error_desc, error_name)
 
@@ -23,7 +24,7 @@ class TuneRequestBaseError(Exception):
     __error_status = None
     __error_reason = None
     __error_details = None
-    __error_origin = 'Module'
+    __error_origin = __title__
     __error_request_curl = None
 
     def __init__(
