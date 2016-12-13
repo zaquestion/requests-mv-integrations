@@ -14,7 +14,7 @@ from functools import partial
 
 import bs4
 import requests
-import requests_toolbelt
+from requests_toolbelt.utils import dump
 import xmltodict
 from logging_mv_integrations import (
     TuneLoggingFormat,
@@ -243,7 +243,7 @@ def requests_response_json(
     except json.decoder.JSONDecodeError as json_decode_ex:
         log.error("Validate JSON Response: Failed: JSONDecodeError", extra=response_extra)
 
-        data = requests_toolbelt.utils.dump.dump_all(response)
+        data = dump.dump_all(response)
         pprint(data.decode('utf-8'))
 
         pprint(response.text)
