@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#  @namespace pycountry-convert
+#  @namespace requests-mv-integrations
 
 from __future__ import with_statement
 
@@ -66,11 +66,12 @@ setup(
     author='TUNE Inc., TuneLab',
     author_email='jefft@tune.com',
     url='https://github.com/TuneLab/requests-mv-integrations',
+    download_url='https://github.com/TuneLab/requests-mv-integrations/archive/v{0}.tar.gz'.format(version),
     install_requires=REQUIREMENTS,
     packages=PACKAGES,
     package_dir={'requests-mv-integrations': 'requests-mv-integrations'},
     include_package_data=True,
-    license='Apache 2.0',
+    license='MIT',
     zip_safe=False,
     classifiers=CLASSIFIERS,
     long_description="""

@@ -10,7 +10,7 @@ We'd like to thank the following people who have contributed to the `requests_mv
 - Jeff Tanner <jefft@tune.com>
 - Zaq? Wiedmann <zaq@tune.com>
 
-## pycountry-convert-python Maintainers
+## requests-mv-integrations-python Maintainers
 ==========================================
 
 - Jeff Tanner <jefft@tune.com>
