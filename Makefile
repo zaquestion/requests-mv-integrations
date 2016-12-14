@@ -132,6 +132,7 @@ dist: clean
 	@echo dist $(PACKAGE)
 	@echo "======================================================"
 	$(PIP3) install --upgrade -r requirements.txt
+	hub release create v$(VERSION) -m "$(PACKAGE_PREFIX)-$(VERSION)-$(PACKAGE_SUFFIX)"
 	$(PYTHON3) $(SETUP_FILE) bdist_wheel upload
 	$(PYTHON3) $(SETUP_FILE) bdist_egg upload
 	$(PYTHON3) $(SETUP_FILE) sdist --format=zip,gztar upload
