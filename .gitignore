@@ -53,3 +53,7 @@ sonar-project.properties
 .sonar
 
 dist/*
+
+# pytest
+.cache/*
+
