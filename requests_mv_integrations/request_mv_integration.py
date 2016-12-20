@@ -885,6 +885,13 @@ class RequestMvIntegration(object):
 
                 response = self.tune_request.request(**kwargs)
 
+                self.logger.debug(
+                    msg=(request_label if request_label is not None else "request: GET"),
+                    extra={
+                        'response_url': response.url
+                    }
+                )
+
             elif request_method == 'POST':
                 if request_params:
                     request_url += "?" + urllib.parse.urlencode(request_params)

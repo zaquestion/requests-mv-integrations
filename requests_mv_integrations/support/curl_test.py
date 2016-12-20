@@ -12,7 +12,7 @@ _test_command_line_request_curl = [
      'https://api.mobileapptracking.com/v2/advertiser/find',
      {'Content-Type': 'application/json'},
      'api_key=2a2f00e3c3aa5d0093feff066a0948db',
-     "curl --verbose -X GET -H 'Content-Type: application/json' -H 'User-Agent: (requests-mv-integrations/0.1.9, Python/3.5.2)' --connect-timeout 60 -L -G --data 'api_key=2a2f00e3c3aa5d0093feff066a0948db' 'https://api.mobileapptracking.com/v2/advertiser/find'"),
+     "curl --verbose -X GET -H 'Content-Type: application/json' -H 'User-Agent: (requests-mv-integrations/0.2.0, Python/3.5.2)' --connect-timeout 60 -L -G --data 'api_key=2a2f00e3c3aa5d0093feff066a0948db' 'https://api.mobileapptracking.com/v2/advertiser/find'"),
 ]
 
 @pytest.mark.parametrize(
