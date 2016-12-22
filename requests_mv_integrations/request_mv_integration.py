@@ -885,6 +885,14 @@ class RequestMvIntegration(object):
 
                 response = self.tune_request.request(**kwargs)
 
+                if hasattr(response, 'url'):
+                    self.logger.debug(
+                        msg=(request_label if request_label is not None else "request: GET"),
+                        extra={
+                            'response_url': response.url
+                        }
+                    )
+
             elif request_method == 'POST':
                 if request_params:
                     request_url += "?" + urllib.parse.urlencode(request_params)
@@ -919,6 +927,14 @@ class RequestMvIntegration(object):
 
                 response = self.tune_request.request(**kwargs)
 
+                if hasattr(response, 'url'):
+                    self.logger.debug(
+                        msg=(request_label if request_label is not None else "request: POST"),
+                        extra={
+                            'response_url': response.url
+                        }
+                    )
+
             elif request_method == 'PUT':
                 if request_params:
                     request_url += "?" + urllib.parse.urlencode(request_params)
@@ -946,6 +962,14 @@ class RequestMvIntegration(object):
                 kwargs.update({'request_method': 'PUT', 'request_url': request_url})
 
                 response = self.tune_request.request(**kwargs)
+
+                if hasattr(response, 'url'):
+                    self.logger.debug(
+                        msg=(request_label if request_label is not None else "request: PUT"),
+                        extra={
+                            'response_url': response.url
+                        }
+                    )
 
             elif request_method == 'HEAD':
                 if request_params:
