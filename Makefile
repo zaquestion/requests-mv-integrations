@@ -210,6 +210,9 @@ list-package:
 tests: build
 	$(PYTHON3) ./tests/tune_reporting_tests.py $(api_key)
 
+test: 
+	py.test
+
 tests-travis-ci:
 	flake8 --ignore=F401,E265,E129 tune
 	flake8 --ignore=E123,E126,E128,E265,E501 tests
