@@ -8,11 +8,16 @@ import pytest
 from requests_mv_integrations.support import command_line_request_curl
 
 _test_command_line_request_curl = [
-    ('GET',
-     'https://api.mobileapptracking.com/v2/advertiser/find',
-     {'Content-Type': 'application/json'},
-     'api_key=2a2f00e3c3aa5d0093feff066a0948db',
-     "curl --verbose -X GET -H 'Content-Type: application/json' -H 'User-Agent: (requests-mv-integrations/0.2.0, Python/3.5.2)' --connect-timeout 60 -L -G --data 'api_key=2a2f00e3c3aa5d0093feff066a0948db' 'https://api.mobileapptracking.com/v2/advertiser/find'"),
+    (
+        'GET',
+        'https://api.partner.com/find',
+        {'Content-Type': 'application/json'},
+        'api_key=11111111222222223333333344444444',
+        [
+            "curl --verbose -X GET -H 'Content-Type: application/json' -H 'User-Agent: (requests-mv-integrations/0.2.0, Python/3.5.2)' --connect-timeout 60 -L -G --data 'api_key=11111111222222223333333344444444' 'https://api.partner.com/find'",
+            "curl --verbose -X GET -H 'User-Agent: (requests-mv-integrations/0.2.0, Python/3.5.2)' -H 'Content-Type: application/json' --connect-timeout 60 -L -G --data 'api_key=11111111222222223333333344444444' 'https://api.partner.com/find'",
+        ],
+    ),
 ]
 
 @pytest.mark.parametrize(
@@ -20,10 +25,15 @@ _test_command_line_request_curl = [
     _test_command_line_request_curl
 )
 def test_curl(request_method, request_url, request_data, request_headers, expected):
-    res = command_line_request_curl(
+    curl_res = command_line_request_curl(
         request_method=request_method,
         request_url=request_url,
         request_headers=request_headers,
         request_data=request_data
     )
-    assert res == expected
+    res = False
+    for exp_curl_res in expected:
+        if curl_res == exp_curl_res:
+            res = True
+            break
+    assert(res)
