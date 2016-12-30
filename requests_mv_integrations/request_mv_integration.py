@@ -582,140 +582,22 @@ class RequestMvIntegration(object):
             error_exception = None
             _tries -= 1
 
-            try:
-                response = request_func()
+            is_retry = True
 
-                if response is None:
-                    raise TuneRequestModuleError(
-                        error_message="Request Retry: No response",
-                        error_code=TuneRequestErrorCodes.REQ_ERR_UNEXPECTED_VALUE
-                    )
+            to_raise_exception, to_return_response = self.try_send_request(
+                _attempts,
+                _tries,
+                request_func,
+                request_label,
+                request_retry_func,
+                request_url
+            )
 
-                self.logger.debug(
-                    "Request Retry: Checking Response",
-                    extra={'request_url': request_url,
-                           'request_label': request_label}
-                )
+            if to_raise_exception:
+                raise to_raise_exception
 
-                if request_retry_func is not None:
-                    if not request_retry_func(response):
-                        self.logger.debug(
-                            "Request Retry: Response: Valid: Not Retry Candidate",
-                            extra={'request_url': request_url,
-                                   'request_label': request_label}
-                        )
-                        return response
-                else:
-                    self.logger.debug(
-                        "Request Retry: Response: Valid",
-                        extra={'request_url': request_url,
-                               'request_label': request_label}
-                    )
-                    return response
-
-                self.logger.debug(
-                    "Request Retry: Response: Valid: Retry Candidate",
-                    extra={'request_url': request_url,
-                           'request_label': request_label}
-                )
-
-            except self.request_retry_excps as retry_ex:
-                error_exception = retry_ex
-
-                self.logger.warning(
-                    "Request Retry: Expected: {}: Retry Candidate".format(base_class_name(error_exception)),
-                    extra={
-                        'error_details': get_exception_message(error_exception),
-                        'request_url': request_url,
-                        'request_label': request_label
-                    }
-                )
-
-                if not _tries:
-                    self.logger.error(
-                        "Request Retry: Expected: {}: Exhausted Retries".format(base_class_name(error_exception))
-                    )
-                    raise
-
-            except TuneRequestBaseError as tmv_ex:
-                error_exception = tmv_ex
-                tmv_ex_extra = tmv_ex.to_dict()
-                tmv_ex_extra.update({
-                    'error_exception': base_class_name(error_exception),
-                    'error_details': get_exception_message(error_exception),
-                    'request_label': request_label
-                })
-
-                self.logger.warning(
-                    "Request Retry: Failed: {}".format(get_exception_message(error_exception)), extra=tmv_ex.to_dict()
-                )
-
-                if not self.request_retry_excps_func or \
-                        not self.request_retry_excps_func(tmv_ex, request_label):
-                    tmv_ex_extra.update({'request_retry_excps_func': self.request_retry_excps_func})
-                    self.logger.error(
-                        "Request Retry: Integration: {}: Not Retry Candidate".format(base_class_name(error_exception)),
-                        extra=tmv_ex_extra
-                    )
-                    raise
-
-                self.logger.warning(
-                    "Request Retry: Integration: {}: Retry Candidate".format(base_class_name(error_exception)),
-                    extra=tmv_ex_extra
-                )
-
-                if not _tries:
-                    self.logger.error(
-                        "Request Retry: Integration: {}: Exhausted Retries".format(base_class_name(error_exception))
-                    )
-                    raise
-
-            except Exception as ex:
-                error_exception = ex
-                ex_extra = {
-                    'error_exception': base_class_name(error_exception),
-                    'error_details': get_exception_message(error_exception),
-                    'request_url': request_url,
-                    'request_label': request_label
-                }
-
-                if not self.request_retry_excps_func or \
-                        not self.request_retry_excps_func(error_exception, request_label):
-                    self.logger.error(
-                        "Request Retry: Unexpected: {}: Not Retry Candidate".format(base_class_name(error_exception)),
-                        extra=ex_extra
-                    )
-                    raise
-
-                self.logger.warning(
-                    "Request Retry: Unexpected: {}: Retry Candidate".format(base_class_name(error_exception)),
-                    extra=ex_extra
-                )
-
-                if not _tries:
-                    raise TuneRequestModuleError(
-                        error_message="Unexpected: {}".format(base_class_name(error_exception)),
-                        errors=error_exception,
-                        error_request_curl=self.built_request_curl,
-                        error_code=TuneRequestErrorCodes.REQ_ERR_RETRY_EXHAUSTED
-                    )
-
-            if not _tries:
-                self.logger.error(
-                    "Request Retry: Exhausted Retries",
-                    extra={
-                        'attempts': _attempts,
-                        'tries': _tries,
-                        'request_url': request_url,
-                        'request_label': request_label
-                    }
-                )
-
-                raise TuneRequestModuleError(
-                    error_message=("Request Retry: Exhausted Retries: {}: {}").format(request_label, request_url),
-                    error_request_curl=self.built_request_curl,
-                    error_code=TuneRequestErrorCodes.REQ_ERR_RETRY_EXHAUSTED
-                )
+            if to_return_response:
+                return to_return_response
 
             self.logger.info(
                 "Request Retry: Performing Retry",
@@ -738,6 +620,170 @@ class RequestMvIntegration(object):
 
             if self.retry_max_delay is not None:
                 _delay = min(_delay, self.retry_max_delay)
+
+    def try_send_request(self, _attempts, _tries, request_func, request_label, request_retry_func, request_url):
+        to_raise_exception = None
+        to_return_response = None
+        try:
+            response = request_func()
+
+            if response is None:
+                raise TuneRequestModuleError(
+                    error_message="Request Retry: No response",
+                    error_code=TuneRequestErrorCodes.REQ_ERR_UNEXPECTED_VALUE
+                )
+
+            if self.is_return_response(request_label, request_retry_func, request_url, response):
+                to_return_response = response
+            else:
+                self.logger.debug(
+                    "Request Retry: Response: Valid: Retry Candidate",
+                    extra={'request_url': request_url,
+                           'request_label': request_label}
+                )
+
+        except self.request_retry_excps as retry_ex:
+            if not self.is_retry_retry_ex(_tries, request_label, request_url, retry_ex):
+                to_raise_exception = retry_ex
+
+        except TuneRequestBaseError as tmv_ex:
+            if not self.is_retry_non_retry_ex(_tries, request_label, tmv_ex):
+                to_raise_exception = tmv_ex
+
+        except Exception as ex:
+            is_retry, raised_exception = self.is_retry_non_tune_ex(_tries, ex, request_label, request_url)
+            if not is_retry:
+                to_raise_exception = raised_exception
+        '''
+                By reaching here, we have passed the try catch block.
+                Raise an exception if the number of retries has exhausted.
+                Otherwise, prepare for next retry.
+                '''
+        if self.is_exhausted_retries(
+                _tries,
+                partial(
+                    self.logger.error,
+                    "Request Retry: Exhausted Retries",
+                    extra={
+                        'attempts': _attempts,
+                        'tries': _tries,
+                        'request_url': request_url,
+                        'request_label': request_label
+                    }
+                )
+        ):
+            to_raise_exception = TuneRequestModuleError(
+                error_message=("Request Retry: Exhausted Retries: {}: {}").format(request_label, request_url),
+                error_request_curl=self.built_request_curl,
+                error_code=TuneRequestErrorCodes.REQ_ERR_RETRY_EXHAUSTED
+            )
+
+        return to_raise_exception, to_return_response
+
+    def is_retry_non_tune_ex(self, _tries, ex, request_label, request_url):
+        is_retry = True
+        error_exception = ex
+        ex_extra = {
+            'error_exception': base_class_name(error_exception),
+            'error_details': get_exception_message(error_exception),
+            'request_url': request_url,
+            'request_label': request_label
+        }
+        if not self.request_retry_excps_func or \
+                not self.request_retry_excps_func(error_exception, request_label):
+            self.logger.error(
+                "Request Retry: Unexpected: {}: Not Retry Candidate".format(base_class_name(error_exception)),
+                extra=ex_extra
+            )
+            is_retry = False
+            raised_exception = error_exception
+        if is_retry:
+            self.logger.warning(
+                "Request Retry: Unexpected: {}: Retry Candidate".format(base_class_name(error_exception)),
+                extra=ex_extra
+            )
+
+            if self.is_exhausted_retries(_tries, lambda: None):
+                is_retry = False
+                raised_exception = TuneRequestModuleError(
+                    error_message="Unexpected: {}".format(base_class_name(error_exception)),
+                    errors=error_exception,
+                    error_request_curl=self.built_request_curl,
+                    error_code=TuneRequestErrorCodes.REQ_ERR_RETRY_EXHAUSTED
+                )
+        return is_retry, raised_exception
+
+    def is_retry_non_retry_ex(self, _tries, request_label, tmv_ex):
+        is_retry = False
+        error_exception = tmv_ex
+        tmv_ex_extra = tmv_ex.to_dict()
+        tmv_ex_extra.update({
+            'error_exception': base_class_name(error_exception),
+            'error_details': get_exception_message(error_exception),
+            'request_label': request_label
+        })
+        self.logger.warning(
+            "Request Retry: Failed: {}".format(get_exception_message(error_exception)), extra=tmv_ex.to_dict()
+        )
+        if not self.request_retry_excps_func or \
+                not self.request_retry_excps_func(tmv_ex, request_label):
+            tmv_ex_extra.update({'request_retry_excps_func': self.request_retry_excps_func})
+            self.logger.error(
+                "Request Retry: Integration: {}: Not Retry Candidate".format(base_class_name(error_exception)),
+                extra=tmv_ex_extra
+            )
+            is_retry = False
+        if is_retry:
+            self.logger.warning(
+                "Request Retry: Integration: {}: Retry Candidate".format(base_class_name(error_exception)),
+                extra=tmv_ex_extra
+            )
+            is_retry = not self.is_exhausted_retries(
+                _tries,
+                partial(self.logger.error,"Request Retry: Expected: {}: Exhausted Retries".format(base_class_name(error_exception))))
+        return is_retry
+
+    def is_exhausted_retries(self, tries, logger_func_call):
+        if not tries:
+            logger_func_call()
+            return True
+        return False
+
+    def is_retry_retry_ex(self, tries, request_label, request_url, retry_ex):
+        self.logger.warning(
+            "Request Retry: Expected: {}: Retry Candidate".format(base_class_name(retry_ex)),
+            extra={
+                'error_details': get_exception_message(retry_ex),
+                'request_url': request_url,
+                'request_label': request_label
+            }
+        )
+        return self.is_exhausted_retries(tries, partial(self.logger.error,
+                "Request Retry: Expected: {}: Exhausted Retries".format(base_class_name(retry_ex))))
+
+    def is_return_response(self, request_label, request_retry_func, request_url, response):
+        is_return_response = False
+        self.logger.debug(
+            "Request Retry: Checking Response",
+            extra={'request_url': request_url,
+                   'request_label': request_label}
+        )
+        if request_retry_func is not None:
+            if not request_retry_func(response):
+                self.logger.debug(
+                    "Request Retry: Response: Valid: Not Retry Candidate",
+                    extra={'request_url': request_url,
+                           'request_label': request_label}
+                )
+                is_return_response = True
+        else:
+            self.logger.debug(
+                "Request Retry: Response: Valid",
+                extra={'request_url': request_url,
+                       'request_label': request_label}
+            )
+            is_return_response = True
+        return is_return_response
 
     # Request Data
     #
