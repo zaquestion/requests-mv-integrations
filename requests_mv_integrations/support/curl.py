@@ -7,14 +7,10 @@ import re
 import json
 import urllib.parse
 from .constants import (__USER_AGENT__)
-from .utils import (dict_to_pretty_string)
 from base64 import b64encode
 import requests
-from collections import OrderedDict
 import shlex
 import argparse
-from six.moves import http_cookies as Cookie
-import copy
 
 # from pprintpp import pprint
 

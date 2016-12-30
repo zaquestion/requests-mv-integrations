@@ -6,7 +6,6 @@
 """
 
 import sys
-import json
 
 
 #  Check Python Version
@@ -64,10 +63,3 @@ def full_class_name(obj):
         return obj.__module__ + "." + obj.__class__.__name__
     except Exception as ex:
         return obj.__class__.__name__
-
-
-def dict_to_pretty_string(the_dict, indent=4):
-    if not the_dict:
-        return "{}"
-
-    return ("\n" + " " * indent).join(json.dumps(the_dict, sort_keys=True, indent=indent, separators=(',', ': ')).splitlines())

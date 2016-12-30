@@ -44,6 +44,5 @@ from .utils import (
     base_class_name,
     full_class_name,
     convert_size,
-    python_check_version,
-    dict_to_pretty_string
+    python_check_version
 )
