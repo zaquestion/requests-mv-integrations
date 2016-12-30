@@ -52,8 +52,9 @@ docs/sphinx/_build/*
 sonar-project.properties
 .sonar
 
-dist/*
-
 # pytest
 .cache/*
 
+# distribution
+.eggs/*
+dist/*

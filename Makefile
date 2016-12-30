@@ -134,7 +134,7 @@ dist: clean
 	hub release create v$(VERSION) -m "$(PACKAGE_PREFIX)-$(VERSION)-$(PACKAGE_SUFFIX)"
 	$(PYTHON3) $(SETUP_FILE) bdist_wheel upload
 	$(PYTHON3) $(SETUP_FILE) bdist_egg upload
-	$(PYTHON3) $(SETUP_FILE) sdist --format=zip,gztar upload
+	$(PYTHON3) $(SETUP_FILE) sdist --format=gztar upload
 	ls -al ./dist/$(PACKAGE_PREFIX_WILDCARD)
 
 build: clean
