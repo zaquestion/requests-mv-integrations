@@ -75,7 +75,7 @@ def ok_request_args_dict():
     return {
         'allow_redirects': True,
         'headers': {'Content-Type': 'application/json',
-                    'User-Agent': '(requests-mv-integrations/0.2.0, Python/3.5.2)'},
+                    'User-Agent': '(requests-mv-integrations/0.2.1, Python/3.5.2)'},
         'params': 'key=11111111222222223333333344444444',
         'request_method': 'GET',
         'request_url': 'mock://test.com/path/OK',

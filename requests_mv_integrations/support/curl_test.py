@@ -14,8 +14,8 @@ _test_command_line_request_curl = [
         {'Content-Type': 'application/json'},
         'api_key=11111111222222223333333344444444',
         [
-            "curl --verbose -X GET -H 'Content-Type: application/json' -H 'User-Agent: (requests-mv-integrations/0.2.0, Python/3.5.2)' --connect-timeout 60 -L -G --data 'api_key=11111111222222223333333344444444' 'https://api.partner.com/find'",
-            "curl --verbose -X GET -H 'User-Agent: (requests-mv-integrations/0.2.0, Python/3.5.2)' -H 'Content-Type: application/json' --connect-timeout 60 -L -G --data 'api_key=11111111222222223333333344444444' 'https://api.partner.com/find'",
+            "curl --verbose -X GET -H 'Content-Type: application/json' -H 'User-Agent: (requests-mv-integrations/0.2.1, Python/3.5.2)' --connect-timeout 60 -L -G --data 'api_key=11111111222222223333333344444444' 'https://api.partner.com/find'",
+            "curl --verbose -X GET -H 'User-Agent: (requests-mv-integrations/0.2.1, Python/3.5.2)' -H 'Content-Type: application/json' --connect-timeout 60 -L -G --data 'api_key=11111111222222223333333344444444' 'https://api.partner.com/find'",
         ],
     ),
 ]

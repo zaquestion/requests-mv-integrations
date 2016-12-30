@@ -25,7 +25,6 @@ WHEEL_ARCHIVE := dist/$(PACKAGE_PREFIX)-$(VERSION)-$(PACKAGE_SUFFIX)
 
 PACKAGE_FILES := $(shell find $(PACKAGE_PREFIX) examples ! -name '__init__.py' -type f -name "*.py")
 PACKAGE_ALL_FILES := $(shell find $(PACKAGE_PREFIX) examples -type f -name "*.py")
-
 TOOLS_REQ_FILE := requirements-tools.txt
 REQ_FILE      := requirements.txt
 SETUP_FILE    := setup.py
@@ -53,7 +52,7 @@ brew-python:
 
 clean:
 	@echo "======================================================"
-	@echo clean: $(PACKAGE)
+	@echo clean $(PACKAGE)
 	@echo "======================================================"
 	rm -fR __pycache__ venv "*.pyc" build/*    \
 		$(PACKAGE_PREFIX)/__pycache__/         \
@@ -70,7 +69,7 @@ clean:
 
 uninstall-package: clean
 	@echo "======================================================"
-	@echo uninstall-package: $(PACKAGE)
+	@echo uninstall-package $(PACKAGE)
 	@echo "======================================================"
 	$(PIP3) install --upgrade list
 	@if $(PIP3) list --format=legacy | grep -F $(PACKAGE) > /dev/null; then \
@@ -83,13 +82,13 @@ uninstall-package: clean
 
 remove-package: uninstall-package
 	@echo "======================================================"
-	@echo remove-package: $(PACKAGE_PREFIX)
+	@echo remove-package $(PACKAGE_PREFIX)
 	@echo "======================================================"
 	rm -fR $(PYTHON3_SITE_PACKAGES)/$(PACKAGE_PREFIX)*
 
 install: remove-package
 	@echo "======================================================"
-	@echo install: $(PACKAGE)
+	@echo install $(PACKAGE)
 	@echo "======================================================"
 	$(PIP3) install --upgrade pip
 	$(PIP3) install --upgrade $(WHEEL_ARCHIVE)
@@ -139,6 +138,12 @@ dist: clean
 	ls -al ./dist/$(PACKAGE_PREFIX_WILDCARD)
 
 build: clean
+	@echo "======================================================"
+	@echo remove $(PACKAGE_PREFIX_WILDCARD) and $(PACKAGE_WILDCARD)
+	@echo "======================================================"
+	mkdir -p ./dist/
+	find ./dist/ -name $(PACKAGE_WILDCARD) -exec rm -vf {} \;
+	find ./dist/ -name $(PACKAGE_PREFIX_WILDCARD) -exec rm -vf {} \;
 	@echo "======================================================"
 	@echo build $(PACKAGE)
 	@echo "======================================================"
