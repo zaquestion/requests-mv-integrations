@@ -2,4 +2,3 @@ pylint
 pep8
 pyflakes
 yapf
-deepdiff
