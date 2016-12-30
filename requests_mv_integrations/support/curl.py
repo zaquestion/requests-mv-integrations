@@ -7,8 +7,14 @@ import re
 import json
 import urllib.parse
 from .constants import (__USER_AGENT__)
+from .utils import (dict_to_pretty_string)
 from base64 import b64encode
 import requests
+from collections import OrderedDict
+import shlex
+import argparse
+from six.moves import http_cookies as Cookie
+import copy
 
 # from pprintpp import pprint
 
@@ -192,3 +198,27 @@ def command_line_request_curl(
                 timeout=request_timeout,
                 url=request_url,
             )
+
+
+def parse_curl(curl_command):
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('command')
+    parser.add_argument('url')
+    parser.add_argument('-d', '--data')
+    parser.add_argument('-X', '--request', help="Specify request command to use", default="GET")
+    parser.add_argument('-v', '--verbose', help="increase output verbosity", action="store_true")
+    parser.add_argument('-V', '--version', help="Show version number and quit", action="store_true")
+    parser.add_argument('-G', '--get', help="Send the -d data with a HTTP GET", action="store_true")
+    parser.add_argument('-L', '--location', help="Follow redirects", action="store_true")
+    parser.add_argument('-b', '--data-binary', default=None)
+    parser.add_argument('-H', '--header', action='append', default=[])
+    parser.add_argument('--compressed', action='store_true')
+    parser.add_argument('--connect-timeout', default=None)
+
+    tokens = shlex.split(curl_command)
+    parsed_args = parser.parse_args(tokens)
+
+    parsed_curl = vars(parsed_args)
+
+    return parsed_curl

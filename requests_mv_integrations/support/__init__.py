@@ -20,7 +20,7 @@ from .constants import (
     REQUEST_RETRY_EXCPS,
     REQUEST_RETRY_HTTP_STATUS_CODES,
 )
-from .curl import (command_line_request_curl)
+from .curl import (command_line_request_curl, parse_curl)
 from .safe_cast import (
     safe_cast,
     safe_dict,
@@ -45,4 +45,5 @@ from .utils import (
     full_class_name,
     convert_size,
     python_check_version,
+    dict_to_pretty_string
 )

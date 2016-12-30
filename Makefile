@@ -212,16 +212,8 @@ list-package:
 	@echo "======================================================"
 	ls -al $(PYTHON3_SITE_PACKAGES)/$(PACKAGE_PREFIX)*
 
-tests: build
-	$(PYTHON3) ./tests/tune_reporting_tests.py $(api_key)
-
-test: 
-	py.test
-
-tests-travis-ci:
-	flake8 --ignore=F401,E265,E129 tune
-	flake8 --ignore=E123,E126,E128,E265,E501 tests
-	$(PYTHON3) ./tests/tune_reporting_tests.py $(api_key)
+test: tools-requirements
+	py.test tests
 
 docs-sphinx-gen:
 	rm -fR ./docs/sphinx/tune_reporting/*
@@ -241,7 +233,14 @@ docs-doxygen:
 	x-www-browser docs/doxygen/html/index.html
 
 run-examples:
-	$(PYTHON3) examples/example_request.py
+	@echo "======================================================"
+	@echo examples/example_request.py
+	@echo "======================================================"
+	@$(PYTHON3) examples/example_request.py
+	@echo "======================================================"
+	@echo examples/example_safe_cast.py
+	@echo "======================================================"
+	@$(PYTHON3) examples/example_safe_cast.py
 
 list:
 	cat Makefile | grep "^[a-z]" | awk '{print $$1}' | sed "s/://g" | sort

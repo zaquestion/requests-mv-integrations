@@ -8,14 +8,16 @@ import requests
 from requests_mv_integrations import (__version__, __title__)
 from pyhttpstatus_utils import (HttpStatusCode)
 
-__MODULE_VERSION_INFO__ = tuple(__version__.split('.'))
-__MODULE_SIG__ = "%s/%s" % (__title__, __version__)
+__MODULE_VERSION__ = __version__
+__MODULE_VERSION_INFO__ = tuple(__MODULE_VERSION__.split('.'))
+__MODULE_SIG__ = "%s/%s" % (__title__, __MODULE_VERSION__)
 
 __TIMEZONE_NAME_DEFAULT__ = "UTC"
 
-__PYTHON_VERSION__ = 'Python/%d.%d.%d' % (sys.version_info[0], sys.version_info[1], sys.version_info[2])
+__PYTHON_VERSION__ = '%d.%d.%d' % (sys.version_info[0], sys.version_info[1], sys.version_info[2])
+__PYTHON_SIG__ = 'Python/%s' % (__PYTHON_VERSION__)
 
-__USER_AGENT__ = "({}, {})".format(__MODULE_SIG__, __PYTHON_VERSION__)
+__USER_AGENT__ = "({}, {})".format(__MODULE_SIG__, __PYTHON_SIG__)
 
 __LOGGER_NAME__ = __name__.split('.')[0]
 
