@@ -258,7 +258,7 @@ class RequestMvIntegrationDownload(object):
             time.sleep(_delay)
 
         log.info(
-            "Request CSV Download: Downloaded",
+            "Request CSV Download: Finished",
             extra={
                 'request_label': request_label,
                 'file_path': tmp_csv_file_path,
@@ -350,8 +350,8 @@ class RequestMvIntegrationDownload(object):
             Generator containing JSON data by rows in JSON dictionary format.
 
         """
-        log.debug(
-            "Request JSON Download",
+        log.info(
+            "Request JSON Download: Start",
             extra={
                 'request_url': request_url,
                 'encoding_write': encoding_write,
@@ -369,7 +369,7 @@ class RequestMvIntegrationDownload(object):
         while _tries:
             _attempts += 1
 
-            log.info(
+            log.debug(
                 "Request JSON Download",
                 extra={'attempts': _attempts,
                        'request_url': request_url,
@@ -662,7 +662,7 @@ class RequestMvIntegrationDownload(object):
     def download_csv(
         self, response, tmp_directory, tmp_csv_file_name, request_label=None, encoding_write=None, decode_unicode=False
     ):
-        log.debug("Download CSV: Start")
+        log.info("Request Download CSV: Start")
 
         if not os.path.exists(tmp_directory):
             os.mkdir(tmp_directory)
@@ -778,7 +778,7 @@ class RequestMvIntegrationDownload(object):
         bom_enc, bom_len, bom_header = detect_bom(tmp_csv_file_path)
 
         log.debug(
-            "Download CSV: By Chunk: Completed: Details",
+            "Request Download CSV: By Chunk: Completed: Details",
             extra={
                 'file_path': tmp_csv_file_path,
                 'file_size': convert_size(tmp_csv_file_size),
@@ -803,7 +803,7 @@ class RequestMvIntegrationDownload(object):
 
         bom_enc, bom_len = remove_bom(tmp_csv_file_path, tmp_csv_file_path_wo_bom)
 
-        log.debug("Download CSV: Encoding", extra={'bom_enc': bom_enc, 'bom_len': bom_len})
+        log.debug("Request Download CSV: Encoding", extra={'bom_enc': bom_enc, 'bom_len': bom_len})
 
         if bom_len > 0:
             tmp_csv_file_path = tmp_csv_file_path_wo_bom
@@ -836,7 +836,7 @@ class RequestMvIntegrationDownload(object):
         Returns:
 
         """
-        log.info("Stream CSV: Start", extra={'report_url': request_url})
+        log.info("Request Stream CSV: Start", extra={'report_url': request_url})
 
         response = self.mv_request.request(
             request_method="GET",
@@ -864,7 +864,7 @@ class RequestMvIntegrationDownload(object):
         response_http_status_code = response.status_code
 
         log.debug(
-            "Stream CSV: Status: Details",
+            "Request Stream CSV: Status: Details",
             extra={
                 'response_content_type': response_content_type,
                 'response_transfer_encoding': response_transfer_encoding,

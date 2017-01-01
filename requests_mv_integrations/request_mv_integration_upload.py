@@ -103,7 +103,7 @@ class RequestMvIntegrationUpload(object):
             'upload_request_headers': upload_request_headers
         }
 
-        log.debug("Upload: Details", extra=upload_extra)
+        log.info("Request Upload JSON File: Start", extra=upload_extra)
 
         try:
             with open(upload_data_file_path, 'rb') as upload_fp:
@@ -119,20 +119,20 @@ class RequestMvIntegrationUpload(object):
                     request_retry_excps_func=self._upload_request_retry_excps_func,
                     allow_redirects=False,
                     build_request_curl=False,
-                    request_label="{}: Request Upload".format(request_label)
+                    request_label=request_label
                 )
         except TuneRequestBaseError as tmv_ex:
 
             tmv_ex_extra = tmv_ex.to_dict()
             tmv_ex_extra.update({'error_exception': base_class_name(tmv_ex)})
 
-            log.error("Request Upload: Failed", extra=tmv_ex_extra)
+            log.error("Request Upload JSON File: Failed", extra=tmv_ex_extra)
 
             raise
 
         except Exception as ex:
             log.error(
-                "Request Upload: Failed: Unexpected",
+                "Request Upload JSON File: Failed: Unexpected",
                 extra={'error_exception': base_class_name(ex),
                        'error_details': get_exception_message(ex)}
             )
@@ -140,12 +140,16 @@ class RequestMvIntegrationUpload(object):
             print_traceback(ex)
 
             raise TuneRequestModuleError(
-                error_message=("Request Upload: Failed: Unexpected: {}: {}").format(
+                error_message=("Request Upload JSON File: Failed: Unexpected: {}: {}").format(
                     base_class_name(ex), get_exception_message(ex)
                 ),
                 errors=ex,
                 error_code=TuneRequestErrorCodes.REQ_ERR_UPLOAD_DATA
             )
+
+        log.info(
+            "Request Upload JSON File: Finished"
+        )
 
         return response
 
@@ -160,8 +164,11 @@ class RequestMvIntegrationUpload(object):
             requests.Response
         """
         log.info(
-            "Uploading Data", extra={'upload_data_size': upload_data_size,
-                                     'upload_request_url': upload_request_url}
+            "Request Upload JSON Data: Start",
+            extra={
+                'upload_data_size': upload_data_size,
+                'upload_request_url': upload_request_url
+            }
         )
 
         request_retry_excps = REQUEST_RETRY_EXCPS
@@ -213,6 +220,10 @@ class RequestMvIntegrationUpload(object):
                 errors=ex,
                 error_code=TuneRequestErrorCodes.REQ_ERR_UPLOAD_DATA
             )
+
+        log.info(
+            "Request Upload JSON Data: Finished"
+        )
 
         return response
 

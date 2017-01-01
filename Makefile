@@ -13,7 +13,6 @@ PYTHON3 := $(shell which python3)
 PIP3    := $(shell which pip3)
 
 PY_MODULES := pip setuptools pylint flake8 pprintpp pep8 requests six sphinx wheel python-dateutil
-PYTHON3_SITE_PACKAGES := $(shell python3 -c "import site; print(site.getsitepackages()[0])")
 
 PACKAGE_SUFFIX := py3-none-any.whl
 PACKAGE_WILDCARD := $(PACKAGE)-*
@@ -80,7 +79,14 @@ uninstall-package: clean
 		echo "python package $(PACKAGE) Not Found"; \
 	fi
 
-remove-package: uninstall-package
+site-packages:
+	@echo "======================================================"
+	@echo site-packages
+	@echo "======================================================"
+	$(eval PYTHON3_SITE_PACKAGES := $(shell python3 -c "import site; print(site.getsitepackages()[0])"))
+	@echo $(PYTHON3_SITE_PACKAGES)
+
+remove-package: uninstall-package site-packages
 	@echo "======================================================"
 	@echo remove-package $(PACKAGE_PREFIX)
 	@echo "======================================================"
@@ -200,48 +206,24 @@ flake8:
 	@echo "======================================================"
 	flake8 --ignore=F401,E265,E129 $(PACKAGE_PREFIX)
 
-site-packages:
-	@echo "======================================================"
-	@echo site-packages $(PACKAGE)
-	@echo "======================================================"
-	@echo $(PYTHON3_SITE_PACKAGES)
-
-list-package:
+list-package: site-packages
 	@echo "======================================================"
 	@echo list-packages $(PACKAGE)
 	@echo "======================================================"
 	ls -al $(PYTHON3_SITE_PACKAGES)/$(PACKAGE_PREFIX)*
 
-tests: build
-	$(PYTHON3) ./tests/tune_reporting_tests.py $(api_key)
-
-test: 
-	py.test
-
-tests-travis-ci:
-	flake8 --ignore=F401,E265,E129 tune
-	flake8 --ignore=E123,E126,E128,E265,E501 tests
-	$(PYTHON3) ./tests/tune_reporting_tests.py $(api_key)
-
-docs-sphinx-gen:
-	rm -fR ./docs/sphinx/tune_reporting/*
-	sphinx-apidoc -o ./docs/sphinx/tune_reporting/ ./tune_reporting
-
-docs-install: venv
-	. venv/bin/activate; pip install -r docs/sphinx/requirements.txt
-
-docs-sphinx: docs-install
-	rm -fR ./docs/sphinx/_build
-	cd docs/sphinx && make html
-	x-www-browser docs/sphinx/_build/html/index.html
-
-docs-doxygen:
-	rm -fR ./docs/doxygen/*
-	sudo doxygen docs/Doxyfile
-	x-www-browser docs/doxygen/html/index.html
+test:
+	py.test tests
 
 run-examples:
-	$(PYTHON3) examples/example_request.py
+	@echo "======================================================"
+	@echo examples/example_request.py
+	@echo "======================================================"
+	@$(PYTHON3) examples/example_request.py
+	@echo "======================================================"
+	@echo examples/example_safe_cast.py
+	@echo "======================================================"
+	@$(PYTHON3) examples/example_safe_cast.py
 
 list:
 	cat Makefile | grep "^[a-z]" | awk '{print $$1}' | sed "s/://g" | sort
