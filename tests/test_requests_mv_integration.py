@@ -53,6 +53,7 @@ def request_mv_integration_object():
     :return: A RequestMvIntegration object
     """
     obj = RequestMvIntegration()
+    obj.retry_tries, obj.retry_delay, obj.timeout = 3, 1, 10
     return obj
 
 @pytest.fixture
@@ -88,6 +89,31 @@ def ok_request_args_dict():
         'verify': True
     }
 
+class RequestRetryException(Exception):
+    pass
+
+_request_retry_test_object = (
+    ('RequestRetryException', None),
+    ('TuneRequestBaseError', None),
+    ('Exception', None),
+    ('TuneRequestModuleError', TuneRequestErrorCodes.REQ_ERR_RETRY_EXHAUSTED),
+    ('TuneRequestModuleError', TuneRequestErrorCodes.REQ_ERR_UNEXPECTED_VALUE),
+)
+
+@pytest.fixture(scope='session')
+def exceptions():
+    exceptions_dict = dict()
+    exceptions_dict[RequestRetryException.__name__] = RequestRetryException()
+    exceptions_dict[TuneRequestBaseError.__name__] = TuneRequestBaseError()
+    exceptions_dict[Exception.__name__] = Exception()
+    exceptions_dict[TuneRequestModuleError.__name__] = dict()
+    exceptions_dict[TuneRequestModuleError.__name__][TuneRequestErrorCodes.REQ_ERR_RETRY_EXHAUSTED] = TuneRequestModuleError(
+        error_code=TuneRequestErrorCodes.REQ_ERR_RETRY_EXHAUSTED
+    )
+    exceptions_dict[TuneRequestModuleError.__name__][TuneRequestErrorCodes.REQ_ERR_UNEXPECTED_VALUE] = TuneRequestModuleError(
+        error_code=TuneRequestErrorCodes.REQ_ERR_UNEXPECTED_VALUE
+    )
+    return exceptions_dict
 
 class TestRequestMvIntegration:
     """
@@ -155,3 +181,51 @@ class TestRequestMvIntegration:
             request_url=request_args['request_url']
         )
         assert(resp.status_code == requests.codes.ok)
+
+
+    @pytest.mark.parametrize("exception_type_name, error_code", _request_retry_test_object)
+    def test__request_retry(
+            self,
+            exception_type_name,
+            error_code,
+            exceptions,
+            request_mv_integration_object,
+            monkeypatch
+    ):
+        def mock_try_send_request(
+            _attempts,
+            _tries,
+            request_func,
+            request_label,
+            request_retry_func,
+            request_url
+        ):
+            if exception_type_name in exceptions:
+                all_exception_type_exceptions = exceptions[exception_type_name]
+                if error_code is not None:
+                    if error_code in all_exception_type_exceptions:
+                        exception_instance = all_exception_type_exceptions[error_code]
+                        raise exception_instance
+                    else:
+                        raise Exception(
+                            "Bad input to test: No {} exception with error code {}".format(
+                                exception_type_name,
+                                error_code
+                            )
+                        )
+                else:
+                    exception_instance = all_exception_type_exceptions
+                    raise exception_instance
+            else:
+                raise Exception("Bad input to test: No {} exceptions".format(exception_type_name))
+
+        monkeypatch.setattr(request_mv_integration_object, 'try_send_request', mock_try_send_request)
+        request_mv_integration_object.request_retry_excps = [RequestRetryException]
+        try:
+            request_mv_integration_object._request_retry(call_func=lambda *args, **kwargs: None)
+        except Exception as e:
+            assert(type(e).__name__ == exception_type_name)
+            if error_code is not None:
+                assert(e.error_code == error_code)
+
+
