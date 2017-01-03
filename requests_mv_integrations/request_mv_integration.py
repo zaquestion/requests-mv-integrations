@@ -565,7 +565,7 @@ class RequestMvIntegration(object):
         while _tries:
             _attempts += 1
 
-            fkwargs['timeout'] = _timeout
+            kwargs['timeout'] = _timeout
             request_func = partial(call_func, *args, **kwargs)
 
             self.logger.debug(
