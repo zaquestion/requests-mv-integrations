@@ -642,7 +642,7 @@ class RequestMvIntegration(object):
                            'request_label': request_label}
                 )
 
-        except self.request_retry_excps as retry_ex:
+        except tuple(self.request_retry_excps) as retry_ex:
             if not self.is_retry_retry_ex(_tries, request_label, request_url, retry_ex):
                 to_raise_exception = retry_ex
 
@@ -654,12 +654,9 @@ class RequestMvIntegration(object):
             is_retry, raised_exception = self.is_retry_non_tune_ex(_tries, ex, request_label, request_url)
             if not is_retry:
                 to_raise_exception = raised_exception
-        '''
-                By reaching here, we have passed the try catch block.
-                Raise an exception if the number of retries has exhausted.
-                Otherwise, prepare for next retry.
-                '''
-        if self.is_exhausted_retries(
+
+        # A final check, whether we need to raise an exception, is in case the number of retries has exhausted.
+        if not to_raise_exception and self.is_exhausted_retries(
                 _tries,
                 partial(
                     self.logger.error,
@@ -682,6 +679,7 @@ class RequestMvIntegration(object):
 
     def is_retry_non_tune_ex(self, _tries, ex, request_label, request_url):
         is_retry = True
+        raised_exception = None
         error_exception = ex
         ex_extra = {
             'error_exception': base_class_name(error_exception),
@@ -714,7 +712,7 @@ class RequestMvIntegration(object):
         return is_retry, raised_exception
 
     def is_retry_non_retry_ex(self, _tries, request_label, tmv_ex):
-        is_retry = False
+        is_retry = True
         error_exception = tmv_ex
         tmv_ex_extra = tmv_ex.to_dict()
         tmv_ex_extra.update({
@@ -758,7 +756,7 @@ class RequestMvIntegration(object):
                 'request_label': request_label
             }
         )
-        return self.is_exhausted_retries(tries, partial(self.logger.error,
+        return not self.is_exhausted_retries(tries, partial(self.logger.error,
                 "Request Retry: Expected: {}: Exhausted Retries".format(base_class_name(retry_ex))))
 
     def is_return_response(self, request_label, request_retry_func, request_url, response):
