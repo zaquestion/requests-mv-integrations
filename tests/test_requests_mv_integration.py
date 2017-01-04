@@ -18,6 +18,10 @@ from requests_mv_integrations.errors import TuneRequestErrorCodes
 
 from requests_mv_integrations import TuneRequest
 
+from requests.models import Response
+
+from requests.exceptions import ReadTimeout
+
 request_raised_exceptions_test_object = (
     (requests.exceptions.ConnectTimeout, TuneRequestServiceError, TuneRequestErrorCodes.GATEWAY_TIMEOUT),
     (requests.exceptions.ReadTimeout, TuneRequestServiceError, TuneRequestErrorCodes.GATEWAY_TIMEOUT),
@@ -54,6 +58,7 @@ def request_mv_integration_object():
     """
     obj = RequestMvIntegration()
     obj.retry_tries, obj.retry_delay, obj.timeout = 3, 1, 10
+    obj.request_retry_excps = [ReadTimeout]
     return obj
 
 @pytest.fixture
@@ -89,7 +94,7 @@ def ok_request_args_dict():
         'verify': True
     }
 
-class RequestRetryException(Exception):
+class RequestRetryException(TuneRequestBaseError):
     pass
 
 _request_retry_test_object = (
@@ -98,6 +103,165 @@ _request_retry_test_object = (
     ('Exception', None),
     ('TuneRequestModuleError', TuneRequestErrorCodes.REQ_ERR_RETRY_EXHAUSTED),
     ('TuneRequestModuleError', TuneRequestErrorCodes.REQ_ERR_UNEXPECTED_VALUE),
+)
+
+try_send_request_test_object = (
+    (
+        None,
+        None,
+        'response_none',
+        None,
+        'response=None',
+        None,
+        None,
+        None,
+        'TuneRequestModuleError',
+        TuneRequestErrorCodes.REQ_ERR_UNEXPECTED_VALUE,
+        False,
+    ),
+    (
+        1,
+        3,
+        'response_ok_with_valid_json_content',
+        None,
+        'OK reponse && request_retry_func=True',
+        lambda x: True,
+        None,
+        'www.requesturl.com',
+        None,
+        None,
+        None,
+    ),
+    (
+        2,
+        0,
+        'response_ok_with_valid_json_content',
+        None,
+        'OK reponse && request_retry_func=True && Request tries exhausted',
+        lambda x: True,
+        None,
+        'www.requesturl.com',
+        'TuneRequestModuleError',
+        TuneRequestErrorCodes.REQ_ERR_RETRY_EXHAUSTED,
+        False,
+    ),
+    (
+        1,
+        3,
+        'response_ok_with_valid_json_content',
+        None,
+        'OK reponse && request_retry_func=False',
+        lambda x: False,
+        None,
+        'www.requesturl.com',
+        None,
+        None,
+        True,
+    ),
+    (
+        1,
+        3,
+        'response_ok_with_valid_json_content',
+        ReadTimeout,
+        'Request Retry Exception thrown && tries>0',
+        lambda x: False,
+        None,
+        'www.requesturl.com',
+        None,
+        None,
+        False,
+    ),
+    (
+        1,
+        0,
+        'response_ok_with_valid_json_content',
+        ReadTimeout,
+        'Request Retry Exception thrown && tries==0',
+        lambda x: False,
+        None,
+        'www.requesturl.com',
+        'ReadTimeout',
+        None,
+        False,
+    ),
+    (
+        1,
+        3,
+        'response_ok_with_valid_json_content',
+        TuneRequestServiceError,
+        'TuneRequestServiceError && request_retry_excps_func==False',
+        lambda x: False,
+        lambda x, y: False,
+        'www.requesturl.com',
+        'TuneRequestServiceError',
+        None,
+        False,
+    ),
+    (
+        1,
+        3,
+        'response_ok_with_valid_json_content',
+        TuneRequestServiceError,
+        'TuneRequestServiceError && request_retry_excps_func==True && tries>0',
+        lambda x: False,
+        lambda x, y: True,
+        'www.requesturl.com',
+        None,
+        None,
+        False,
+    ),
+    (
+        1,
+        0,
+        'response_ok_with_valid_json_content',
+        TuneRequestServiceError,
+        'TuneRequestServiceError && request_retry_excps_func==True && tries==0',
+        lambda x: False,
+        lambda x, y: True,
+        'www.requesturl.com',
+        'TuneRequestServiceError',
+        None,
+        False,
+    ),
+    (
+        1,
+        3,
+        'response_ok_with_valid_json_content',
+        Exception,
+        'General Exception && request_retry_excps_func==False',
+        lambda x: False,
+        lambda x, y: False,
+        'www.requesturl.com',
+        'Exception',
+        None,
+        False,
+    ),
+    (
+        1,
+        3,
+        'response_ok_with_valid_json_content',
+        Exception,
+        'General Exception && request_retry_excps_func==True && tries>0',
+        lambda x: False,
+        lambda x, y: True,
+        'www.requesturl.com',
+        None,
+        None,
+        False,
+    ),
+    (
+        1,
+        0,
+        'response_ok_with_valid_json_content',
+        Exception,
+        'General Exception && request_retry_excps_func==True && tries==0',
+        lambda x: False,
+        lambda x, y: True,
+        'www.requesturl.com',
+        'TuneRequestModuleError',
+        TuneRequestErrorCodes.REQ_ERR_RETRY_EXHAUSTED,
+        False,
+    ),
 )
 
 @pytest.fixture(scope='session')
@@ -229,3 +393,52 @@ class TestRequestMvIntegration:
                 assert(e.error_code == error_code)
 
 
+
+    @pytest.mark.parametrize("attempts, tries, response_type, exception_thrown_by_request_func, request_label, request_retry_func, request_retry_excps_func, request_url, expected_exception_name, expected_error_code, is_expected_response",
+                             try_send_request_test_object)
+    def test_try_send_request(
+            self,
+            attempts,
+            tries,
+            response_type,
+            exception_thrown_by_request_func,
+            request_label,
+            request_retry_func,
+            request_retry_excps_func,
+            request_url,
+            expected_exception_name,
+            expected_error_code,
+            is_expected_response,
+            request_mv_integration_object,
+            responses_dict,
+    ):
+        def mock_request_func():
+            assert(exception_thrown_by_request_func is not None or
+                   response_type is not None and  response_type in responses_dict)
+            if exception_thrown_by_request_func is not None:
+                raise exception_thrown_by_request_func
+            if response_type is not None:
+                return responses_dict[response_type]
+
+        request_mv_integration_object.request_retry_excps_func = request_retry_excps_func
+
+        to_raise_exception, to_return_response = request_mv_integration_object.try_send_request(
+            attempts,
+            tries,
+            mock_request_func,
+            request_label,
+            request_retry_func,
+            request_url,
+        )
+        # Can't have a result of both throwing an exception and returning a valid response
+        assert(to_raise_exception is None or to_return_response is None)
+        # In case if throwing an exception, check that the expected type is thrown,
+        # with the expected error code if provided
+        if expected_exception_name is not None:
+            assert(type(to_raise_exception).__name__ == expected_exception_name)
+        else:
+            assert(to_raise_exception is None)
+        if expected_error_code is not None:
+            assert (to_raise_exception.error_code == expected_error_code)
+        if is_expected_response:
+            assert(isinstance(to_return_response, Response))
