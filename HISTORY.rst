@@ -3,6 +3,11 @@
 Release History
 ---------------
 
+0.2.4
+++++++++++++++++++
+**Bug Fixes**
+- request timeout
+
 0.2.3
 ++++++++++++++++++
 **Bug Fixes**

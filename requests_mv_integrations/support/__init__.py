@@ -40,9 +40,4 @@ from .response import (
 )
 from .tune_request import (TuneRequest)
 from .singleton import (Singleton)
-from .utils import (
-    base_class_name,
-    full_class_name,
-    convert_size,
-    python_check_version
-)
+from .utils import (base_class_name, full_class_name, convert_size, python_check_version)

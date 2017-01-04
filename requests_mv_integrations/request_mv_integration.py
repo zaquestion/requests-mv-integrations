@@ -305,28 +305,6 @@ class RequestMvIntegration(object):
                 retry_codes=self.request_retry_http_status_codes
             )
 
-        logger_extra = {
-            'request_method': request_method,
-            'request_url': request_url,
-        }
-
-        if request_params:
-            logger_extra.update({'request_params': request_params})
-
-        if request_retry:
-            logger_extra.update({'request_retry': request_retry})
-
-        if request_headers:
-            logger_extra.update({'request_headers': request_headers})
-
-        if request_auth:
-            logger_extra.update({'request_auth': request_auth})
-
-        if request_json:
-            logger_extra.update({'request_json': request_json})
-
-        self.logger.debug("Request: Setup: {}".format(request_label if request_label else ""), extra=logger_extra)
-
         key_user_agent = 'User-Agent'
         header_user_agent = {key_user_agent: __USER_AGENT__}
 
@@ -367,23 +345,27 @@ class RequestMvIntegration(object):
         if request_retry_excps is not None:
             self.request_retry_excps = request_retry_excps
 
-        self.logger.debug(
-            "Request: Details: {}".format(request_label if request_label else ""),
-            extra={
-                'request_method': request_method,
-                'request_retry': request_retry,
-                'request_url': request_url,
-                'request_params': request_params,
-                'request_data': request_data,
-                'request_json': request_json,
-                'request_headers': request_headers,
-                'request_auth': request_auth,
-                'timeout': timeout,
-                'allow_redirects': allow_redirects,
-                'verify': verify,
-                'stream': stream
-            }
-        )
+        extra_request = copy.copy(kwargs)
+
+        if request_retry:
+            extra_request.update({'request_retry': request_retry})
+
+        if request_label:
+            extra_request.update({'request_label': request_label})
+
+        if request_retry:
+            extra_request.update({'request_retry': request_retry})
+
+        if request_retry_func:
+            extra_request.update({'request_retry_func': request_retry_func})
+        if request_retry_http_status_codes:
+            extra_request.update({'request_retry_http_status_codes': request_retry_http_status_codes})
+        if request_retry_excps:
+            extra_request.update({'request_retry_excps': request_retry_excps})
+        if request_retry_excps:
+            extra_request.update({'request_retry_excps_func': request_retry_excps_func})
+
+        self.logger.debug("Request: Details", extra=extra_request)
 
         try:
             self._prep_request_retry(request_retry, request_retry_http_status_codes)
@@ -534,9 +516,11 @@ class RequestMvIntegration(object):
         Returns:
 
         """
-        request_retry_extra = {'timeout': timeout}
-
-        request_retry_extra.update({'request_retry_http_status_codes': self.request_retry_http_status_codes})
+        request_retry_extra = {
+            'request_label': request_label,
+            'timeout': timeout,
+            'request_retry_http_status_codes': self.request_retry_http_status_codes,
+        }
 
         if self.request_retry_excps is not None:
             request_retry_excp_names = [excp.__name__ for excp in list(self.request_retry_excps)]
@@ -550,9 +534,7 @@ class RequestMvIntegration(object):
             request_retry_excps_func_name = request_retry_excps_func.__name__
             request_retry_extra.update({'request_retry_excps_func': request_retry_excps_func_name})
 
-        self.logger.debug(
-            "Request Retry: Start: {}".format(request_label if request_label else ""), extra=request_retry_extra
-        )
+        self.logger.debug("Request Retry: Start", extra=request_retry_extra)
 
         args = fargs if fargs else list()
         kwargs = fkwargs if fkwargs else dict()
@@ -569,8 +551,9 @@ class RequestMvIntegration(object):
             request_func = partial(call_func, *args, **kwargs)
 
             self.logger.debug(
-                "Request Retry: Attempt: {}: {}".format(request_label if request_label else "", _attempts),
+                "Request Retry: Attempt",
                 extra={
+                    'request_label': request_label,
                     'attempts': _attempts,
                     'timeout': _timeout,
                     'tries': _tries,
@@ -585,12 +568,7 @@ class RequestMvIntegration(object):
             is_retry = True
 
             to_raise_exception, to_return_response = self.try_send_request(
-                _attempts,
-                _tries,
-                request_func,
-                request_label,
-                request_retry_func,
-                request_url
+                _attempts, _tries, request_func, request_label, request_retry_func, request_url
             )
 
             if to_raise_exception:
@@ -657,17 +635,17 @@ class RequestMvIntegration(object):
 
         # A final check, whether we need to raise an exception, is in case the number of retries has exhausted.
         if not to_raise_exception and self.is_exhausted_retries(
-                _tries,
-                partial(
-                    self.logger.error,
-                    "Request Retry: Exhausted Retries",
-                    extra={
-                        'attempts': _attempts,
-                        'tries': _tries,
-                        'request_url': request_url,
-                        'request_label': request_label
-                    }
-                )
+            _tries,
+            partial(
+                self.logger.error,
+                "Request Retry: Exhausted Retries",
+                extra={
+                    'attempts': _attempts,
+                    'tries': _tries,
+                    'request_url': request_url,
+                    'request_label': request_label
+                }
+            )
         ):
             to_raise_exception = TuneRequestModuleError(
                 error_message=("Request Retry: Exhausted Retries: {}: {}").format(request_label, request_url),
@@ -738,7 +716,11 @@ class RequestMvIntegration(object):
             )
             is_retry = not self.is_exhausted_retries(
                 _tries,
-                partial(self.logger.error,"Request Retry: Expected: {}: Exhausted Retries".format(base_class_name(error_exception))))
+                partial(
+                    self.logger.error,
+                    "Request Retry: Expected: {}: Exhausted Retries".format(base_class_name(error_exception))
+                )
+            )
         return is_retry
 
     def is_exhausted_retries(self, tries, logger_func_call):
@@ -756,15 +738,18 @@ class RequestMvIntegration(object):
                 'request_label': request_label
             }
         )
-        return not self.is_exhausted_retries(tries, partial(self.logger.error,
-                "Request Retry: Expected: {}: Exhausted Retries".format(base_class_name(retry_ex))))
+        return not self.is_exhausted_retries(
+            tries,
+            partial(
+                self.logger.error, "Request Retry: Expected: {}: Exhausted Retries".format(base_class_name(retry_ex))
+            )
+        )
 
     def is_return_response(self, request_label, request_retry_func, request_url, response):
         is_return_response = False
         self.logger.debug(
-            "Request Retry: Checking Response",
-            extra={'request_url': request_url,
-                   'request_label': request_label}
+            "Request Retry: Checking Response", extra={'request_url': request_url,
+                                                       'request_label': request_label}
         )
         if request_retry_func is not None:
             if not request_retry_func(response):
@@ -776,9 +761,8 @@ class RequestMvIntegration(object):
                 is_return_response = True
         else:
             self.logger.debug(
-                "Request Retry: Response: Valid",
-                extra={'request_url': request_url,
-                       'request_label': request_label}
+                "Request Retry: Response: Valid", extra={'request_url': request_url,
+                                                         'request_label': request_label}
             )
             is_return_response = True
         return is_return_response
@@ -870,7 +854,7 @@ class RequestMvIntegration(object):
             'request_label': request_label
         }
 
-        self.logger.debug("Send Request: Details: {}".format(request_label), extra=request_extra)
+        self.logger.debug("Send Request: Details", extra=request_extra)
 
         self.built_request_curl = None
 
@@ -881,8 +865,8 @@ class RequestMvIntegration(object):
         if request_auth:
             kwargs.update({'auth': request_auth})
 
-        if timeout:
-            kwargs.update({'timeout': (timeout, timeout)})
+        if timeout and isinstance(timeout, int):
+            kwargs.update({'timeout': timeout})
 
         if allow_redirects:
             kwargs.update({'allow_redirects': allow_redirects})
@@ -927,14 +911,13 @@ class RequestMvIntegration(object):
 
                 kwargs.update({'request_method': 'GET', 'request_url': request_url})
 
+                # Send GET request
                 response = self.tune_request.request(**kwargs)
 
                 if hasattr(response, 'url'):
                     self.logger.debug(
                         msg=(request_label if request_label is not None else "request: GET"),
-                        extra={
-                            'response_url': response.url
-                        }
+                        extra={'response_url': response.url}
                     )
 
             elif request_method == 'POST':
@@ -969,14 +952,13 @@ class RequestMvIntegration(object):
 
                 kwargs.update({'request_method': 'POST', 'request_url': request_url})
 
+                # Send POST request
                 response = self.tune_request.request(**kwargs)
 
                 if hasattr(response, 'url'):
                     self.logger.debug(
                         msg=(request_label if request_label is not None else "request: POST"),
-                        extra={
-                            'response_url': response.url
-                        }
+                        extra={'response_url': response.url}
                     )
 
             elif request_method == 'PUT':
@@ -1005,14 +987,13 @@ class RequestMvIntegration(object):
 
                 kwargs.update({'request_method': 'PUT', 'request_url': request_url})
 
+                # Send PUT request
                 response = self.tune_request.request(**kwargs)
 
                 if hasattr(response, 'url'):
                     self.logger.debug(
                         msg=(request_label if request_label is not None else "request: PUT"),
-                        extra={
-                            'response_url': response.url
-                        }
+                        extra={'response_url': response.url}
                     )
 
             elif request_method == 'HEAD':
@@ -1025,6 +1006,7 @@ class RequestMvIntegration(object):
 
                 kwargs.update({'request_method': 'HEAD', 'request_url': request_url})
 
+                # Send HEAD request
                 response = self.tune_request.request(**kwargs)
 
             else:

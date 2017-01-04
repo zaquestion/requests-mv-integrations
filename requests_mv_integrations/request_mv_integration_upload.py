@@ -147,9 +147,7 @@ class RequestMvIntegrationUpload(object):
                 error_code=TuneRequestErrorCodes.REQ_ERR_UPLOAD_DATA
             )
 
-        log.info(
-            "Request Upload JSON File: Finished"
-        )
+        log.info("Request Upload JSON File: Finished")
 
         return response
 
@@ -165,10 +163,8 @@ class RequestMvIntegrationUpload(object):
         """
         log.info(
             "Request Upload JSON Data: Start",
-            extra={
-                'upload_data_size': upload_data_size,
-                'upload_request_url': upload_request_url
-            }
+            extra={'upload_data_size': upload_data_size,
+                   'upload_request_url': upload_request_url}
         )
 
         request_retry_excps = REQUEST_RETRY_EXCPS
@@ -221,9 +217,7 @@ class RequestMvIntegrationUpload(object):
                 error_code=TuneRequestErrorCodes.REQ_ERR_UPLOAD_DATA
             )
 
-        log.info(
-            "Request Upload JSON Data: Finished"
-        )
+        log.info("Request Upload JSON Data: Finished")
 
         return response
 
