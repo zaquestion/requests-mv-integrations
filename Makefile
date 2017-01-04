@@ -24,6 +24,8 @@ WHEEL_ARCHIVE := dist/$(PACKAGE_PREFIX)-$(VERSION)-$(PACKAGE_SUFFIX)
 
 PACKAGE_FILES := $(shell find $(PACKAGE_PREFIX) examples ! -name '__init__.py' -type f -name "*.py")
 PACKAGE_ALL_FILES := $(shell find $(PACKAGE_PREFIX) examples -type f -name "*.py")
+PACKAGE_EXAMPLE_FILES := $(shell find examples ! -name '__init__.py' -type f -name "*.py")
+
 TOOLS_REQ_FILE := requirements-tools.txt
 REQ_FILE      := requirements.txt
 SETUP_FILE    := setup.py
@@ -137,7 +139,7 @@ dist: clean
 	@echo dist $(PACKAGE)
 	@echo "======================================================"
 	$(PIP3) install --upgrade -r requirements.txt
-	hub release create v$(VERSION) -m "$(PACKAGE_PREFIX)-$(VERSION)-$(PACKAGE_SUFFIX)"
+	hub release create -m "$(PACKAGE_PREFIX)-$(VERSION)-$(PACKAGE_SUFFIX)" v$(VERSION)
 	$(PYTHON3) $(SETUP_FILE) bdist_wheel upload
 	$(PYTHON3) $(SETUP_FILE) bdist_egg upload
 	$(PYTHON3) $(SETUP_FILE) sdist --format=gztar upload
@@ -217,7 +219,7 @@ test:
 
 run-examples:
 	@echo "======================================================"
-	@echo examples/example_request.py
+	@echo run-examples $(PACKAGE)
 	@echo "======================================================"
 	@$(PYTHON3) examples/example_request.py
 	@echo "======================================================"

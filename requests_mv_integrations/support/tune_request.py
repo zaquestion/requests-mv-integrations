@@ -3,7 +3,7 @@
 #  @copyright 2016 TUNE, Inc. (http://www.tune.com)
 #  @namespace requests_mv_integrations
 
-from logging import getLogger
+import logging
 # import grequests
 import requests
 from requests.adapters import (HTTPAdapter, DEFAULT_POOLSIZE)
@@ -12,7 +12,7 @@ from requests_mv_integrations.support import (REQUEST_RETRY_HTTP_STATUS_CODES)
 from requests_mv_integrations.errors import (get_exception_message)
 from .singleton import (Singleton)
 
-log = getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 class TuneRequest(metaclass=Singleton):
@@ -47,16 +47,13 @@ class TuneRequest(metaclass=Singleton):
         self.__session = value
 
     def request(self, request_method, request_url, **kwargs):
+        extra_session_request = {'method': request_method, 'url': request_url}
+        extra_session_request.update(kwargs)
+        log.info("Session Request: Details", extra=extra_session_request)
         try:
             return self.session.request(method=request_method, url=request_url, **kwargs)
         except Exception as ex:
-            log.warning(
-                "Session Request: Failed: {}".format(get_exception_message(ex)),
-                extra={
-                    'request_method': request_method,
-                    'request_url': request_url
-                }
-            )
+            log.warning("Session Request: Failed: {}".format(get_exception_message(ex)), extra=extra_session_request)
             raise
 
     def request_safe(self, request_method, request_url, response_hook=None, exception_handler=None, **kwargs):
@@ -69,10 +66,8 @@ class TuneRequest(metaclass=Singleton):
         except Exception as ex:
             log.warning(
                 "Session Request: Failed: {}".format(get_exception_message(ex)),
-                extra={
-                    'request_method': request_method,
-                    'request_url': request_url
-                }
+                extra={'request_method': request_method,
+                       'request_url': request_url}
             )
             exception_handler(ex)
             return None
