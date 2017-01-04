@@ -214,6 +214,9 @@ list-package: site-packages
 	@echo "======================================================"
 	ls -al $(PYTHON3_SITE_PACKAGES)/$(PACKAGE_PREFIX)*
 
+test:
+	py.test tests
+
 run-examples:
 	@echo "======================================================"
 	@echo run-examples $(PACKAGE)

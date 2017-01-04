@@ -40,13 +40,11 @@ examples/processed.*
 **/_tmp/*
 **/tmp/*
 sandbox/
+_tmp/
 
 # Scripts
 bash/*
 
-# Documentation
-docs/doxygen/*
-docs/sphinx/_build/*
 
 # Analysis
 sonar-project.properties
@@ -58,3 +56,4 @@ sonar-project.properties
 # distribution
 .eggs/*
 dist/*
+
