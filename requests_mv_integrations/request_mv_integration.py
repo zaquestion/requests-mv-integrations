@@ -880,137 +880,48 @@ class RequestMvIntegration(object):
         kwargs.update({'verify': verify})
 
         try:
-            if request_method == 'GET':
-                request_params_encoded = None
-                if request_params:
-                    request_params_encoded = \
-                        urllib.parse.urlencode(request_params)
+            self.logger.debug(
+                "Send Request: Request Base: {0}".format(request_method),
+                extra={
+                    'request_label': request_label,
+                    'request_method': request_method,
+                    'request_curl': self.built_request_curl
+                }
+            )
 
-                if build_request_curl:
-                    self.built_request_curl = command_line_request_curl(
-                        request_method=request_method,
-                        request_url=request_url,
-                        request_headers=headers,
-                        request_data=request_params_encoded,
-                        request_auth=request_auth,
-                        request_timeout=timeout,
-                        request_allow_redirects=allow_redirects
-                    )
+            if build_request_curl:
+                self.built_request_curl = command_line_request_curl(
+                    request_method=request_method,
+                    request_url=request_url,
+                    request_headers=headers,
+                    request_data=request_data,
+                    request_json=request_json,
+                    request_auth=request_auth,
+                    request_timeout=timeout,
+                    request_allow_redirects=allow_redirects
+                )
 
-                    self.logger.debug(
-                        "Send Request: Request Base: GET",
-                        extra={
-                            'request_label': request_label,
-                            'request_method': request_method,
-                            'request_curl': self.built_request_curl
-                        }
-                    )
+            if hasattr(response, 'url'):
+                self.logger.debug(
+                    msg=(request_label if request_label is not None else "request: {0}".format(request_method)),
+                    extra={'response_url': response.url}
+                )
 
-                if request_params_encoded:
-                    kwargs.update({'params': request_params_encoded})
+            if request_params:
+                kwargs.update({'params': request_params})
 
-                kwargs.update({'request_method': 'GET', 'request_url': request_url})
+            if request_data:
+                kwargs.update({'data': request_data})
 
-                # Send GET request
-                response = self.tune_request.request(**kwargs)
+            if request_json:
+                kwargs.update({'json': request_json})
 
-                if hasattr(response, 'url'):
-                    self.logger.debug(
-                        msg=(request_label if request_label is not None else "request: GET"),
-                        extra={'response_url': response.url}
-                    )
+            if headers:
+                kwargs.update({'headers': headers})
 
-            elif request_method == 'POST':
-                if request_params:
-                    request_url += "?" + urllib.parse.urlencode(request_params)
+            kwargs.update({'request_method': request_method, 'request_url': request_url})
 
-                if build_request_curl:
-                    self.built_request_curl = command_line_request_curl(
-                        request_method=request_method,
-                        request_url=request_url,
-                        request_headers=headers,
-                        request_data=request_data,
-                        request_json=request_json,
-                        request_auth=request_auth,
-                        request_timeout=timeout,
-                        request_allow_redirects=allow_redirects
-                    )
-
-                    self.logger.debug(
-                        "Send Request: Request Base: POST",
-                        extra={
-                            'request_label': request_label,
-                            'request_method': request_method,
-                            'request_curl': self.built_request_curl
-                        }
-                    )
-
-                if request_data:
-                    kwargs.update({'data': request_data})
-                if request_json:
-                    kwargs.update({'json': request_json})
-
-                kwargs.update({'request_method': 'POST', 'request_url': request_url})
-
-                # Send POST request
-                response = self.tune_request.request(**kwargs)
-
-                if hasattr(response, 'url'):
-                    self.logger.debug(
-                        msg=(request_label if request_label is not None else "request: POST"),
-                        extra={'response_url': response.url}
-                    )
-
-            elif request_method == 'PUT':
-                if request_params:
-                    request_url += "?" + urllib.parse.urlencode(request_params)
-
-                if build_request_curl:
-                    self.built_request_curl = command_line_request_curl(
-                        request_method=request_method,
-                        request_url=request_url,
-                        request_headers=headers,
-                        request_data=request_data,
-                        request_auth=request_auth,
-                        request_timeout=timeout,
-                        request_allow_redirects=allow_redirects
-                    )
-
-                    self.logger.debug(
-                        "Send Request: Request Base: PUT",
-                        extra={'request_label': request_label,
-                               'request_curl': self.built_request_curl}
-                    )
-
-                if request_data:
-                    kwargs.update({'data': request_data})
-
-                kwargs.update({'request_method': 'PUT', 'request_url': request_url})
-
-                # Send PUT request
-                response = self.tune_request.request(**kwargs)
-
-                if hasattr(response, 'url'):
-                    self.logger.debug(
-                        msg=(request_label if request_label is not None else "request: PUT"),
-                        extra={'response_url': response.url}
-                    )
-
-            elif request_method == 'HEAD':
-                if request_params:
-                    request_url += \
-                        "?" + urllib.parse.urlencode(request_params)
-
-                if headers:
-                    kwargs.update({'headers': headers})
-
-                kwargs.update({'request_method': 'HEAD', 'request_url': request_url})
-
-                # Send HEAD request
-                response = self.tune_request.request(**kwargs)
-
-            else:
-                raise ValueError("Request: Unexpected 'request_method':'{}'".format(request_method))
+            response = self.tune_request.request(**kwargs)
 
         except Exception as ex:
             self.logger.error(
